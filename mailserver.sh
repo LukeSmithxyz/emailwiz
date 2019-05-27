@@ -193,13 +193,13 @@ postconf -e "non_smtpd_milters = inet:localhost:8891"
 
 
 echo "Restarting Dovecot..."
-service dovecot restart && "Dovecot restarted."
+service dovecot restart && echo "Dovecot restarted."
 echo "Restarting Postfix..."
-service postfix restart && "Postfix restarted."
+service postfix restart && echo "Postfix restarted."
 echo "Restarting OpenDKIM..."
-service opendkim restart && "OpenDKIM restarted."
+service opendkim restart && echo "OpenDKIM restarted."
 echo "Restarting Spam Assassin..."
-service spamassassin restart && "Spamassassin restarted."
+service spamassassin restart && echo "Spamassassin restarted."
 
 pval="$(tr -d "\n" </etc/postfix/dkim/mail.txt | sed "s/k=rsa.* \"p=/k=rsa; p=/;s/\"\s*\"//;s/\"\s*).*//" | grep -o p=.*)"
 echo "Here is your TXT entry:"
