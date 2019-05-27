@@ -1,7 +1,5 @@
 # Email server setup script
 
-*NOTE: If this line is here, I'm still testing this to even it out.*
-
 I wrote this script during the grueling process of installing an setting up a web server.
 It perfectly reproduces my successful steps to ensure the same setup time and time again.
 Deviate from one command and everything might fall apart unless you know better!
