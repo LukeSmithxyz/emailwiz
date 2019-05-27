@@ -1,10 +1,5 @@
 #!/bin/sh
 
-# Put your website in the $domain variable.
-domain="lukesmith.xyz"
-subdom="mail"
-maildomain="$subdom.$domain"
-
 # THE SETUP
 
 # - Mail will be stored in non-retarded Maildirs because it's $currentyear. This makes it easier for use with isync, which is what I care about so I can have an offline repo of mail.
@@ -22,6 +17,9 @@ maildomain="$subdom.$domain"
 
 echo "Installing programs..."
 apt install postfix dovecot-imapd opendkim spamassassin spamc
+domain="$(cat /etc/mailname)"
+subdom="mail"
+maildomain="$subdom.$domain"
 
 
 # NOTE ON POSTCONF COMMANDS
@@ -32,8 +30,8 @@ apt install postfix dovecot-imapd opendkim spamassassin spamc
 echo "Configuring Postfix's main.cf..."
 
 # Change the cert/key files to the default locations of the Let's Encrypt cert/key
-postconf -e smtpd_tls_key_file=/etc/letsencrypt/live/$maildomain/privkey.pem
-postconf -e smtpd_tls_cert_file=/etc/letsencrypt/live/$maildomain/fullchain.pem
+postconf -e "smtpd_tls_key_file=/etc/letsencrypt/live/$maildomain/privkey.pem"
+postconf -e "smtpd_tls_cert_file=/etc/letsencrypt/live/$maildomain/fullchain.pem"
 postconf -e "smtpd_use_tls = yes"
 postconf -e "smtpd_tls_auth_only = yes"
 
