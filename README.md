@@ -69,4 +69,4 @@ I honestly have to really strong preference of Vultr over other VPS providers, b
 - All dovecot configuration is just in `/etc/dovecot/dovecot.conf` instead of a dozen little config files. You can read those in `/etc/dovecot/conf.d/` for more info, but they are not called by default after running this script and the needed settings are edited into the main config.
 - Your IMAP/SMTP server will me `mail.yourdomain.tld` and your ports will be the typical ones: 993 for IMAP and 587 for SMTP.
 - Using non-encypted ports is not allowed for safety! The login is with plaintext because that's simpler and more robust given SSL's security.
-- As is, you will use your name, not full email to log in. E.g., for my `luke@lukesmith.xyz` address, `luke` is my login. It seems that `luke` has to be my From: address in `msmtp` too, which is weird (it appears as a full address once I send mail though). I might look into changing this. Tell me if you know what to change.
+- As is, you will use your name, not full email to log in. E.g., for my `luke@lukesmith.xyz` address, `luke` is my login.
