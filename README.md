@@ -9,7 +9,7 @@ Deviate from one command and everything might fall apart unless you know better!
 I've linked this file on Github to a shorter more memorable address on my LARBS.xyz domain, so you can get it on your machine with this short command:
 
 ```
-curl -LO larbs.xyz/mailserver.sh
+curl -LO lukesmith.xyz/emailwiz.sh
 ```
 
 When promped by a dialog menu at the beginning, select "Internet Site", then give your full domain without any subdomain, i.e. `lukesmith.xyz`.
