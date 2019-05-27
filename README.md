@@ -12,6 +12,8 @@ I've linked this file on Github to a shorter more memorable address on my LARBS.
 curl -LO larbs.xyz/mailserver.sh
 ```
 
+When promped by a dialog menu at the beginning, select "Internet Site", then give your full domain without any subdomain, i.e. `lukesmith.xyz`.
+
 Read this readme and peruse the script's comments before running it.
 Expect it to fail.
 
