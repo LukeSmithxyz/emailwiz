@@ -40,7 +40,7 @@ These are the main active ingredients:
 ## Requirements
 
 - `apt purge` all your previous (failed) attempts to install and configure a mailserver. Get rid of _all_ your system settings for Postfix, Dovecot, OpenDKIM and everything else. This script builds off of a fresh install.
-- A Debian *web server*. I suspect the script will run on Ubuntu as well prodided there aren't huge differences in the default setup.
+- A Debian *web server*. I suspect the script will run on Ubuntu as well prodided there aren't huge differences in the default setup. I've tested this on a [Vultr](https://www.vultr.com/?ref=7914655-4F) Debian server and their setup works, but I suspect other VPS hosts will have similar/possibly identical default settings which will let you run this on them.
 - An *MX record* in your DNS settings that points to your own main domain/IP. Unless you have your own DNS server, you'll put this setting on your domain registrar's site. Look up their documentation on how to do this, but it's usually really easy.
 - *SSL for your site's mail subdomain*, specifically for mail.yourdomain.tld with Let's Encrypt. the script will look to Let's Encrypt's generated configs. If you have some other SSL system, you can manually change the SSL locations in the script before running it and it should be fine.
 - After the script runs, you'll have to add an *additional DNS TXT record* which involved OpenDKIM key that it generates during the script.
