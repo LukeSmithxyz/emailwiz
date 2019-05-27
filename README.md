@@ -28,15 +28,6 @@ Expect it to fail.
 - ...set up a graphical interface for mail like Roundcube or Squirrel Mail. If you want that, you'll have to install it yourself. I just use [isync/msmtp/mutt-wizard](https://github.com/lukesmithxyz/mutt-wizard) to have an offline mirror of my email setup and I recommend the same. There are other ways of doing it though, like Thunderbird, etc.
 - ...offer any frills. If you want to change something, open the script up and change some variables.
 
-## Info
-
-These are the main active ingredients:
-
-- Postfix - SMTP server (that's for sending mail)
-- Dovecot - IMAP server (that's for receiving/storing mail)
-- Spam Assassin - does what it sounds like. You can configure the rules you want. Read the manual.
-- OpenDKIM - This authenticates your server so big-name sites like Google won't consider _your_ mail spam.
-
 ## Requirements
 
 - `apt purge` all your previous (failed) attempts to install and configure a mailserver. Get rid of _all_ your system settings for Postfix, Dovecot, OpenDKIM and everything else. This script builds off of a fresh install.
