@@ -59,7 +59,9 @@ echo "Configuring Postfix's master.cf..."
 
 sed -i "/^\s*o/d;/^\s*submission/d;/^\s*smtp/d" /etc/postfix/master.cf
 
-echo "submission inet n       -       y       -       -       smtpd
+echo "smtp unix - - n - - smtp
+smtp inet n - y - - smtpd
+submission inet n       -       y       -       -       smtpd
   -o syslog_name=postfix/submission
   -o smtpd_tls_security_level=encrypt
   -o content_filter=spamassassin
