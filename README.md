@@ -62,5 +62,5 @@ I honestly have to really strong preference of Vultr over other VPS providers, b
 - Using non-encypted ports is not allowed for safety! The login is with plaintext because that's simpler and more robust given SSL's security.
 - As is, you will use your name, not full email to log in. E.g., for my `luke@lukesmith.xyz` address, `luke` is my login.
 
-If this script or documentation has saved you some frustration, you can donate to support me at (lukesmith.xyz/donate)[https://lukesmith.xyz/donate.html].
+If this script or documentation has saved you some frustration, you can donate to support me at [lukesmith.xyz/donate](https://lukesmith.xyz/donate.html).
 No refunds if the process of having a mail server causes you another kind of frustration! 😉
