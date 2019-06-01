@@ -7,7 +7,7 @@ Deviate from one command and everything might fall apart unless you know better!
 I've linked this file on Github to a shorter more memorable address on my LARBS.xyz domain, so you can get it on your machine with this short command:
 
 ```
-curl -LO lukesmith.xyz/emailwiz.sh
+curl -LO larbs.xyz/emailwiz.sh
 ```
 
 When promped by a dialog menu at the beginning, select "Internet Site", then give your full domain without any subdomain, i.e. `lukesmith.xyz`.
@@ -40,7 +40,7 @@ Expect it to fail.
 
 My intention is to have this script working for me on my Debian web server which I have with Vultr.
 Different VPS hosts or distros might have a startup config that's a little different and I'm sure as heck not going to make sure everything works on every possible machine out there, please do not even ask.
-If a lot of people try this script and see that it werks as expected everywhere, then I might try to label it as such and try to make it universal, but think of this script as a script that works on my exact setup than has some educational comments for the uninitiated and only might work as intended.
+If a lot of people try this script and see that it works as expected everywhere, then I might try to label it as such and try to make it universal, but think of this script as a script that works on my exact setup than has some educational comments for the uninitiated and only might work as intended.
 
 Configuring an email server is a living nightmare and that's why I made this script so I wouldn't have to do it again.
 Don't ask me to configure your email server unless you are paying me big bucks to do it.
