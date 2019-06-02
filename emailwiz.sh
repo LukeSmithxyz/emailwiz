@@ -55,7 +55,7 @@ postconf -e "home_mailbox = Mail/Inbox/"
 
 echo "Configuring Postfix's master.cf..."
 
-sed -i "/^\s*o/d;/^\s*submission/d;/^\s*smtp/d" /etc/postfix/master.cf
+sed -i "/^\s*-o/d;/^\s*submission/d;/^\s*smtp/d" /etc/postfix/master.cf
 
 echo "smtp unix - - n - - smtp
 smtp inet n - y - - smtpd
