@@ -52,7 +52,7 @@ The script works for me and if it works for you without a problem, be thankful a
 
 If you decide to start a VPS, specifically Vultr since I made this script and have tempered it most on their default setup,
 use [this referal link of mine](https://www.vultr.com/?ref=7914655-4F) because you get a free $50 credit, and if you stay on the site, eventually I get a kickback too.
-I honestly have to really strong preference of Vultr over other VPS providers, but they're about as cheap and reliable as it gets and if we can get free money, lol whatever click the link 👏👏.
+I honestly have no really strong preference of Vultr over other VPS providers, but they're about as cheap and reliable as it gets and if we can get free money, lol whatever click the link 👏👏.
 
 ## Details
 
