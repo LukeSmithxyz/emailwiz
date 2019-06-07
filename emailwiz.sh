@@ -55,7 +55,7 @@ postconf -e "home_mailbox = Mail/Inbox/"
 
 echo "Configuring Postfix's master.cf..."
 
-sed -i "/^\s*o/d;/^\s*submission/d;/^\s*smtp/d" /etc/postfix/master.cf
+sed -i "/^\s*-o/d;/^\s*submission/d;/^\s*smtp/d" /etc/postfix/master.cf
 
 echo "smtp unix - - n - - smtp
 smtp inet n - y - - smtpd
@@ -177,7 +177,7 @@ grep "127.0.0.1" >/dev/null 2>&1 /etc/postfix/dkim/trustedhosts ||
 1.2.3.4/24" >> /etc/postfix/dkim/trustedhosts
 
 # ...and source it from opendkim.conf
-grep KeyTable /etc/opendkim.conf >/dev/null || echo "KeyTable file:/etc/postfix/dkim/keytable
+grep ^KeyTable /etc/opendkim.conf >/dev/null || echo "KeyTable file:/etc/postfix/dkim/keytable
 SigningTable refile:/etc/postfix/dkim/signingtable
 InternalHosts refile:/etc/postfix/dkim/trustedhosts" >> /etc/opendkim.conf
 
