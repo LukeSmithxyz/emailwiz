@@ -182,7 +182,7 @@ SigningTable refile:/etc/postfix/dkim/signingtable
 InternalHosts refile:/etc/postfix/dkim/trustedhosts" >> /etc/opendkim.conf
 
 # OpenDKIM daemon settings, removing previously activated socket.
-sed -i "/^SOCKET/d" /etc/default/opendkim && echo "SOCKET=\"inet:8891@localhost" >> /etc/default/opendkim
+sed -i "/^SOCKET/d" /etc/default/opendkim && echo "SOCKET=\"inet:8891@localhost\"" >> /etc/default/opendkim
 
 # Here we add to postconf the needed settings for working with OpenDKIM
 echo "Configuring Postfix with OpenDKIM settings..."
