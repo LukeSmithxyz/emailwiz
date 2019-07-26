@@ -140,13 +140,39 @@ service auth {
 	group = postfix
 }
 }
+
+protocol lda {
+  mail_plugins = \$mail_plugins sieve
+}
+
+protocol lmtp {
+  mail_plugins = \$mail_plugins sieve
+}
+
+plugin {
+	sieve = ~/.dovecot.sieve
+	sieve_default = /var/lib/dovecot/sieve/default.sieve
+	#sieve_global_path = /var/lib/dovecot/sieve/default.sieve
+	sieve_dir = ~/.sieve
+	sieve_global_dir = /var/lib/dovecot/sieve/
+}
 " > /etc/dovecot/dovecot.conf
+
+mkdir /var/lib/dovecot/sieve/
+
+echo "require [\"fileinto\", \"mailbox\"];
+if header :contains \"X-Spam-Flag\" \"YES\"
+	{
+		fileinto \"Junk\";
+	}" > /var/lib/dovecot/sieve/default.sieve
+
+chown -R vmail:vmail /var/lib/dovecot
+sievec /var/lib/dovecot/sieve/default.sieve
 
 echo "Preparing user authetication..."
 grep nullok /etc/pam.d/dovecot >/dev/null ||
 echo "auth    required        pam_unix.so nullok
 account required        pam_unix.so" >> /etc/pam.d/dovecot
-
 
 # OpenDKIM
 
@@ -190,7 +216,7 @@ postconf -e "milter_default_action = accept"
 postconf -e "milter_protocol = 2"
 postconf -e "smtpd_milters = inet:localhost:8891"
 postconf -e "non_smtpd_milters = inet:localhost:8891"
-
+postconf -e "mailbox_command = /usr/lib/dovecot/deliver"
 
 echo "Restarting Dovecot..."
 service dovecot restart && echo "Dovecot restarted."
