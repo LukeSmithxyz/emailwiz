@@ -59,15 +59,14 @@ sed -i "/^\s*-o/d;/^\s*submission/d;/^\s*smtp/d" /etc/postfix/master.cf
 
 echo "smtp unix - - n - - smtp
 smtp inet n - y - - smtpd
+  -o content_filter=spamassassin
 submission inet n       -       y       -       -       smtpd
   -o syslog_name=postfix/submission
   -o smtpd_tls_security_level=encrypt
-  -o content_filter=spamassassin
   -o smtpd_sasl_auth_enable=yes
   -o smtpd_tls_auth_only=yes
 smtps     inet  n       -       y       -       -       smtpd
   -o syslog_name=postfix/smtps
-  -o content_filter=spamassassin
   -o smtpd_tls_wrappermode=yes
   -o smtpd_sasl_auth_enable=yes
 spamassassin unix -     n       n       -       -       pipe
