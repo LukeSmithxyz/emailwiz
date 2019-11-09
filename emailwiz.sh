@@ -234,7 +234,10 @@ echo
 echo
 echo
 printf "Record Name\\tRecord Type\\tText of entry\\n"
+# the DKIM record is this one
 printf "%s._domainkey\\tTXT\\t\\tv=DKIM1; k=rsa; %s\\n" "$subdom" "$pval"
+# the SPF record is this one
+printf "%s\\tTXT\\t\\tv=spf1 mx a:%s -all\\n" "@" "$maildomain"
 echo
 echo
 echo "$pval"
