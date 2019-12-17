@@ -16,7 +16,7 @@
 # On installation of Postfix, select "Internet Site" and put in TLD (without before it mail.)
 
 echo "Installing programs..."
-apt install postfix dovecot-imapd opendkim spamassassin spamc
+apt install postfix dovecot-imapd dovecot-sieve opendkim spamassassin spamc
 # Install another requirement for opendikm only if the above command didn't get it already
 [ -e $(which opendkim-genkey) ] || apt install opendkim-tools
 domain="$(cat /etc/mailname)"
@@ -96,7 +96,7 @@ ssl = required
 ssl_cert = </etc/letsencrypt/live/$maildomain/fullchain.pem
 ssl_key = </etc/letsencrypt/live/$maildomain/privkey.pem
 # Plaintext login. This is safe and easy thanks to SSL.
-auth_mechanisms = plain
+auth_mechanisms = plain login
 
 protocols = \$protocols imap
 
@@ -170,6 +170,7 @@ if header :contains \"X-Spam-Flag\" \"YES\"
 		fileinto \"Junk\";
 	}" > /var/lib/dovecot/sieve/default.sieve
 
+cut -d: -f1 /etc/passwd | grep ^vmail > /dev/null 2&>1 || useradd vmail
 chown -R vmail:vmail /var/lib/dovecot
 sievec /var/lib/dovecot/sieve/default.sieve
 
@@ -211,15 +212,18 @@ grep ^KeyTable /etc/opendkim.conf >/dev/null || echo "KeyTable file:/etc/postfix
 SigningTable refile:/etc/postfix/dkim/signingtable
 InternalHosts refile:/etc/postfix/dkim/trustedhosts" >> /etc/opendkim.conf
 
+sed -i '/^#Canonicalization/s/simple/relaxed\/simple/' /etc/opendkim.conf
+sed -i '/^#Canonicalization/s/^#//' /etc/opendkim.conf
+
 # OpenDKIM daemon settings, removing previously activated socket.
-sed -i "/^SOCKET/d" /etc/default/opendkim && echo "SOCKET=\"inet:8891@localhost\"" >> /etc/default/opendkim
+sed -i "/^SOCKET/d" /etc/default/opendkim && echo "SOCKET=\"inet:12301@localhost\"" >> /etc/default/opendkim
 
 # Here we add to postconf the needed settings for working with OpenDKIM
 echo "Configuring Postfix with OpenDKIM settings..."
 postconf -e "milter_default_action = accept"
-postconf -e "milter_protocol = 2"
-postconf -e "smtpd_milters = inet:localhost:8891"
-postconf -e "non_smtpd_milters = inet:localhost:8891"
+postconf -e "milter_protocol = 6"
+postconf -e "smtpd_milters = inet:localhost:12301"
+postconf -e "non_smtpd_milters = inet:localhost:12301"
 postconf -e "mailbox_command = /usr/lib/dovecot/deliver"
 
 echo "Restarting Dovecot..."
