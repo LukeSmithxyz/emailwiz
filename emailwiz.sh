@@ -18,7 +18,7 @@
 echo "Installing programs..."
 apt install postfix dovecot-imapd dovecot-sieve opendkim spamassassin spamc
 # Install another requirement for opendikm only if the above command didn't get it already
-[ -e $(which opendkim-genkey) ] || apt install opendkim-tools
+[ which opendkim-genkey > /dev/null 2>&1 ] || apt install opendkim-tools
 domain="$(cat /etc/mailname)"
 subdom="mail"
 maildomain="$subdom.$domain"
@@ -214,6 +214,9 @@ InternalHosts refile:/etc/postfix/dkim/trustedhosts" >> /etc/opendkim.conf
 
 sed -i '/^#Canonicalization/s/simple/relaxed\/simple/' /etc/opendkim.conf
 sed -i '/^#Canonicalization/s/^#//' /etc/opendkim.conf
+
+sed -e '/Socket/s/^#*/#/' -i /etc/opendkim.conf
+sed -i '/\local:\/var\/run\/opendkim\/opendkim.sock/a \Socket\t\t\tinet:12301@localhost' /etc/opendkim.conf
 
 # OpenDKIM daemon settings, removing previously activated socket.
 sed -i "/^SOCKET/d" /etc/default/opendkim && echo "SOCKET=\"inet:12301@localhost\"" >> /etc/default/opendkim
