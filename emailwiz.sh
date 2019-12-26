@@ -96,7 +96,7 @@ ssl = required
 ssl_cert = </etc/letsencrypt/live/$maildomain/fullchain.pem
 ssl_key = </etc/letsencrypt/live/$maildomain/privkey.pem
 # Plaintext login. This is safe and easy thanks to SSL.
-auth_mechanisms = plain login
+auth_mechanisms = plain login cram-md5
 
 protocols = \$protocols imap
 
@@ -104,7 +104,12 @@ protocols = \$protocols imap
 userdb {
 	driver = passwd
 }
-# Use plain old PAM to find user passwords
+# Use file with cram-md5 hashed passwords to find user passwords
+passdb {
+	driver = passwd-file
+	args = scheme=cram-md5 /etc/cram-md5.pwd
+}
+#Fallback: Use plain old PAM to find user passwords
 passdb {
 	driver = pam
 }
@@ -223,6 +228,9 @@ sed -i "/^SOCKET/d" /etc/default/opendkim && echo "SOCKET=\"inet:12301@localhost
 
 # Here we add to postconf the needed settings for working with OpenDKIM
 echo "Configuring Postfix with OpenDKIM settings..."
+postconf -e "smtpd_sasl_security_options = noanonymous, noplaintext"
+postconf -e "smtpd_sasl_tls_security_options = noanonymous"
+postconf -e "myhostname = $maildomain"
 postconf -e "milter_default_action = accept"
 postconf -e "milter_protocol = 6"
 postconf -e "smtpd_milters = inet:localhost:12301"
