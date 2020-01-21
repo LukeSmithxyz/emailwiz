@@ -46,12 +46,9 @@ Configuring an email server is a living nightmare and that's why I made this scr
 Don't ask me to configure your email server unless you are paying me big bucks to do it.
 With this script and the comments in it, I've given you way more than I owe you.
 
-If something is broken, start a PR to fix it, but *do not* open Issues about some problem you have unless you have figured out a solution and are offering a way for me to add a small change that will make this script more robust.
-Your mindset in running this script should be "oh, look, it puts all the commands in a bash-readable format, so I can run it and troubleshoot errors as they come up.".
-The script works for me and if it works for you without a problem, be thankful and feel lucky because setting up email is usually just so much less forgiving.
-
 If you decide to start a VPS, specifically Vultr since I made this script and have tempered it most on their default setup,
-use [this referal link of mine](https://www.vultr.com/?ref=7914655-4F) because you get a free $50 credit, and if you stay on the site, eventually I get a kickback too.
+use [this referal link of mine](https://www.vultr.com/?ref=8384069-6G) because you get a free $100 credit for a month, and if you stay on the site, eventually I get a smaller kickback too.
+If that link expires, you can also click [this link](https://www.vultr.com/?ref=7861670) which will just give me $10 if you stay on as a paying customer.
 I honestly have no really strong preference of Vultr over other VPS providers, but they're about as cheap and reliable as it gets and if we can get free money, lol whatever click the link 👏👏.
 
 ## Details
