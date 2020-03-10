@@ -2,9 +2,8 @@
 
 I wrote this script during the grueling process of installing an setting up a web server.
 It perfectly reproduces my successful steps to ensure the same setup time and time again.
-Deviate from one command and everything might fall apart unless you know better!
 
-I've linked this file on Github to a shorter more memorable address on my LARBS.xyz domain, so you can get it on your machine with this short command:
+I've linked this file on Github to a shorter more memorable address on my website so you can get it on your machine with this short command:
 
 ```
 curl -LO lukesmith.xyz/emailwiz.sh
@@ -13,7 +12,7 @@ curl -LO lukesmith.xyz/emailwiz.sh
 When promped by a dialog menu at the beginning, select "Internet Site", then give your full domain without any subdomain, i.e. `lukesmith.xyz`.
 
 Read this readme and peruse the script's comments before running it.
-Expect it to fail.
+Expect it to fail and you have to do bug testing and you will be very happy when it actually works perfectly.
 
 ## This script...
 
@@ -36,15 +35,11 @@ Expect it to fail.
 - **SSL for your site's mail subdomain**, specifically for mail.yourdomain.tld with Let's Encrypt. the script will look to Let's Encrypt's generated configs. If you have some other SSL system, you can manually change the SSL locations in the script before running it and it should be fine.
 - After the script runs, you'll have to add an *additional DNS TXT record* which involved OpenDKIM key that it generates during the script.
 
-## Don't get offended by this section
+## Caveats
 
 My intention is to have this script working for me on my Debian web server which I have with Vultr.
 Different VPS hosts or distros might have a startup config that's a little different and I'm sure as heck not going to make sure everything works on every possible machine out there, please do not even ask.
 If a lot of people try this script and see that it werks as expected everywhere, then I might try to label it as such and try to make it universal, but think of this script as a script that works on my exact setup than has some educational comments for the uninitiated and only might work as intended.
-
-Configuring an email server is a living nightmare and that's why I made this script so I wouldn't have to do it again.
-Don't ask me to configure your email server unless you are paying me big bucks to do it.
-With this script and the comments in it, I've given you way more than I owe you.
 
 If you decide to start a VPS, specifically Vultr since I made this script and have tempered it most on their default setup,
 use [this referal link of mine](https://www.vultr.com/?ref=8384069-6G) because you get a free $100 credit for a month, and if you stay on the site, eventually I get a smaller kickback too.
