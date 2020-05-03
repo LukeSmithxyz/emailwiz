@@ -16,7 +16,9 @@
 # On installation of Postfix, select "Internet Site" and put in TLD (without before it mail.)
 
 echo "Installing programs..."
-apt install postfix dovecot-imapd opendkim spamassassin spamc
+apt install postfix dovecot-imapd dovecot-sieve opendkim spamassassin spamc
+# Install another requirement for opendikm only if the above command didn't get it already
+[ which opendkim-genkey > /dev/null 2>&1 ] || apt install opendkim-tools
 domain="$(cat /etc/mailname)"
 subdom="mail"
 maildomain="$subdom.$domain"
@@ -34,6 +36,9 @@ postconf -e "smtpd_tls_key_file=/etc/letsencrypt/live/$maildomain/privkey.pem"
 postconf -e "smtpd_tls_cert_file=/etc/letsencrypt/live/$maildomain/fullchain.pem"
 postconf -e "smtpd_use_tls = yes"
 postconf -e "smtpd_tls_auth_only = yes"
+postconf -e "smtp_tls_security_level = may"
+postconf -e "smtp_tls_loglevel = 1"
+postconf -e "smtp_tls_CAfile = /etc/letsencrypt/live/$maildomain/cert.pem"
 
 # Here we tell Postfix to look to Dovecot for authenticating users/passwords.
 # Dovecot will be putting an authentication socket in /var/spool/postfix/private/auth
@@ -59,15 +64,14 @@ sed -i "/^\s*-o/d;/^\s*submission/d;/^\s*smtp/d" /etc/postfix/master.cf
 
 echo "smtp unix - - n - - smtp
 smtp inet n - y - - smtpd
+  -o content_filter=spamassassin
 submission inet n       -       y       -       -       smtpd
   -o syslog_name=postfix/submission
   -o smtpd_tls_security_level=encrypt
-  -o content_filter=spamassassin
   -o smtpd_sasl_auth_enable=yes
   -o smtpd_tls_auth_only=yes
 smtps     inet  n       -       y       -       -       smtpd
   -o syslog_name=postfix/smtps
-  -o content_filter=spamassassin
   -o smtpd_tls_wrappermode=yes
   -o smtpd_sasl_auth_enable=yes
 spamassassin unix -     n       n       -       -       pipe
@@ -92,7 +96,7 @@ ssl = required
 ssl_cert = </etc/letsencrypt/live/$maildomain/fullchain.pem
 ssl_key = </etc/letsencrypt/live/$maildomain/privkey.pem
 # Plaintext login. This is safe and easy thanks to SSL.
-auth_mechanisms = plain
+auth_mechanisms = plain login cram-md5
 
 protocols = \$protocols imap
 
@@ -100,7 +104,12 @@ protocols = \$protocols imap
 userdb {
 	driver = passwd
 }
-# Use plain old PAM to find user passwords
+# Use file with cram-md5 hashed passwords to find user passwords
+passdb {
+	driver = passwd-file
+	args = scheme=cram-md5 /etc/cram-md5.pwd
+}
+#Fallback: Use plain old PAM to find user passwords
 passdb {
 	driver = pam
 }
@@ -140,13 +149,40 @@ service auth {
 	group = postfix
 }
 }
+
+protocol lda {
+  mail_plugins = \$mail_plugins sieve
+}
+
+protocol lmtp {
+  mail_plugins = \$mail_plugins sieve
+}
+
+plugin {
+	sieve = ~/.dovecot.sieve
+	sieve_default = /var/lib/dovecot/sieve/default.sieve
+	#sieve_global_path = /var/lib/dovecot/sieve/default.sieve
+	sieve_dir = ~/.sieve
+	sieve_global_dir = /var/lib/dovecot/sieve/
+}
 " > /etc/dovecot/dovecot.conf
+
+mkdir /var/lib/dovecot/sieve/
+
+echo "require [\"fileinto\", \"mailbox\"];
+if header :contains \"X-Spam-Flag\" \"YES\"
+	{
+		fileinto \"Junk\";
+	}" > /var/lib/dovecot/sieve/default.sieve
+
+cut -d: -f1 /etc/passwd | grep ^vmail > /dev/null 2&>1 || useradd vmail
+chown -R vmail:vmail /var/lib/dovecot
+sievec /var/lib/dovecot/sieve/default.sieve
 
 echo "Preparing user authetication..."
 grep nullok /etc/pam.d/dovecot >/dev/null ||
 echo "auth    required        pam_unix.so nullok
 account required        pam_unix.so" >> /etc/pam.d/dovecot
-
 
 # OpenDKIM
 
@@ -181,16 +217,25 @@ grep ^KeyTable /etc/opendkim.conf >/dev/null || echo "KeyTable file:/etc/postfix
 SigningTable refile:/etc/postfix/dkim/signingtable
 InternalHosts refile:/etc/postfix/dkim/trustedhosts" >> /etc/opendkim.conf
 
+sed -i '/^#Canonicalization/s/simple/relaxed\/simple/' /etc/opendkim.conf
+sed -i '/^#Canonicalization/s/^#//' /etc/opendkim.conf
+
+sed -e '/Socket/s/^#*/#/' -i /etc/opendkim.conf
+sed -i '/\local:\/var\/run\/opendkim\/opendkim.sock/a \Socket\t\t\tinet:12301@localhost' /etc/opendkim.conf
+
 # OpenDKIM daemon settings, removing previously activated socket.
-sed -i "/^SOCKET/d" /etc/default/opendkim && echo "SOCKET=\"inet:8891@localhost\"" >> /etc/default/opendkim
+sed -i "/^SOCKET/d" /etc/default/opendkim && echo "SOCKET=\"inet:12301@localhost\"" >> /etc/default/opendkim
 
 # Here we add to postconf the needed settings for working with OpenDKIM
 echo "Configuring Postfix with OpenDKIM settings..."
+postconf -e "smtpd_sasl_security_options = noanonymous, noplaintext"
+postconf -e "smtpd_sasl_tls_security_options = noanonymous"
+postconf -e "myhostname = $maildomain"
 postconf -e "milter_default_action = accept"
-postconf -e "milter_protocol = 2"
-postconf -e "smtpd_milters = inet:localhost:8891"
-postconf -e "non_smtpd_milters = inet:localhost:8891"
-
+postconf -e "milter_protocol = 6"
+postconf -e "smtpd_milters = inet:localhost:12301"
+postconf -e "non_smtpd_milters = inet:localhost:12301"
+postconf -e "mailbox_command = /usr/lib/dovecot/deliver"
 
 echo "Restarting Dovecot..."
 service dovecot restart && echo "Dovecot restarted."
@@ -207,7 +252,10 @@ echo
 echo
 echo
 printf "Record Name\\tRecord Type\\tText of entry\\n"
+# the DKIM record is this one
 printf "%s._domainkey\\tTXT\\t\\tv=DKIM1; k=rsa; %s\\n" "$subdom" "$pval"
+# the SPF record is this one
+printf "%s\\tTXT\\t\\tv=spf1 mx a:%s -all\\n" "@" "$maildomain"
 echo
 echo
 echo "$pval"
