@@ -2,43 +2,67 @@
 
 # THE SETUP
 
-# - Mail will be stored in non-retarded Maildirs because it's $currentyear. This makes it easier for use with isync, which is what I care about so I can have an offline repo of mail.
-# - Mail boxes will be sensible: Inbox, Sent, Drafts, Archive, Junk, Trash
-# - Use the typical unix login system for mail users. Users will log into their email with their passnames on the server. No usage of a redundant mySQL database to do this.
+# Mail will be stored in non-retarded Maildirs because it's $currentyear.  This
+# makes it easier for use with isync, which is what I care about so I can have
+# an offline repo of mail.
 
+# The mailbox names are: Inbox, Sent, Drafts, Archive, Junk, Trash
 
-# BEFORE YOU RUN THIS
-# - Have a Debian system with a static IP and all that. Pretty much any default VPS offered by a company will have all the basic stuff you need. This script might run on Ubuntu as well. Haven't tried it.
-# - Have a Let's Encrypt SSL certificate for $maildomain. You might need one for $domain as well, but they're free with Let's Encypt so you should have them anyway.
-# - If you've been toying around with your server settings trying to get postfix/dovecot/etc. working before running this, I recommend you `apt purge` everything first because this script is build on top of only the defaults. Clearr out /etc/postfix and /etc/dovecot yourself if needbe.
+# Use the typical unix login system for mail users. Users will log into their
+# email with their passnames on the server. No usage of a redundant mySQL
+# database to do this.
 
+# DEPENDENCIES BEFORE RUNNING
 
-# On installation of Postfix, select "Internet Site" and put in TLD (without before it mail.)
+# 1. Have a Debian system with a static IP and all that. Pretty much any
+# default VPS offered by a company will have all the basic stuff you need. This
+# script might run on Ubuntu as well. Haven't tried it. If you have, tell me
+# what happens.
+
+# 2. Have a Let's Encrypt SSL certificate for $maildomain. You might need one
+# for $domain as well, but they're free with Let's Encypt so you should have
+# them anyway.
+
+# 3. If you've been toying around with your server settings trying to get
+# postfix/dovecot/etc. working before running this, I recommend you `apt purge`
+# everything first because this script is build on top of only the defaults.
+# Clear out /etc/postfix and /etc/dovecot yourself if needbe.
+
+# NOTE WHILE INSTALLING
+
+# On installation of Postfix, select "Internet Site" and put in TLD (without
+# `mail.` before it).
 
 echo "Installing programs..."
 apt install postfix dovecot-imapd dovecot-sieve opendkim spamassassin spamc
-# Install another requirement for opendikm only if the above command didn't get it already
-[ which opendkim-genkey > /dev/null 2>&1 ] || apt install opendkim-tools
+# Check if OpenDKIM is installed and install it if not.
+which opendkim-genkey >/dev/null 2>&1 || apt install opendkim-tools
 domain="$(cat /etc/mailname)"
 subdom="mail"
 maildomain="$subdom.$domain"
 
+# Determine location of ssl certificate from common names.
+for x in /etc/letsencrypt/live/$maildomain /etc/letsencrypt/live/mail /etc/letsencrypt/live/$domain; do
+	[ -d "$x" ] && certdir="$x" && break
+done
 
 # NOTE ON POSTCONF COMMANDS
 
-# The `postconf` command literally just adds the line in question to /etc/postfix/main.cf so if you need to debug something, go there.
-# It replaces any other line that sets the same setting, otherwise it is appended to the end of the file.
+# The `postconf` command literally just adds the line in question to
+# /etc/postfix/main.cf so if you need to debug something, go there. It replaces
+# any other line that sets the same setting, otherwise it is appended to the
+# end of the file.
 
 echo "Configuring Postfix's main.cf..."
 
 # Change the cert/key files to the default locations of the Let's Encrypt cert/key
-postconf -e "smtpd_tls_key_file=/etc/letsencrypt/live/$maildomain/privkey.pem"
-postconf -e "smtpd_tls_cert_file=/etc/letsencrypt/live/$maildomain/fullchain.pem"
+postconf -e "smtpd_tls_key_file=$certdir/privkey.pem"
+postconf -e "smtpd_tls_cert_file=$certdir/fullchain.pem"
 postconf -e "smtpd_use_tls = yes"
 postconf -e "smtpd_tls_auth_only = yes"
 postconf -e "smtp_tls_security_level = may"
 postconf -e "smtp_tls_loglevel = 1"
-postconf -e "smtp_tls_CAfile = /etc/letsencrypt/live/$maildomain/cert.pem"
+postconf -e "smtp_tls_CAfile=$certdir/cert.pem"
 
 # Here we tell Postfix to look to Dovecot for authenticating users/passwords.
 # Dovecot will be putting an authentication socket in /var/spool/postfix/private/auth
@@ -49,7 +73,10 @@ postconf -e "smtpd_sasl_path = private/auth"
 #postconf -e "smtpd_recipient_restrictions = permit_sasl_authenticated, permit_mynetworks, reject_unauth_destination"
 
 
-# NOTE: the trailing slash here, or for any directory name in the home_mailbox command, is necessary as it distinguishes a maildir (which is the actual directories that what we want) from a spoolfile (which is what old unix boomers want and no one else).
+# NOTE: the trailing slash here, or for any directory name in the home_mailbox
+# command, is necessary as it distinguishes a maildir (which is the actual
+# directories that what we want) from a spoolfile (which is what old unix
+# boomers want and no one else).
 postconf -e "home_mailbox = Mail/Inbox/"
 
 # Research this one:
@@ -78,9 +105,11 @@ spamassassin unix -     n       n       -       -       pipe
   user=debian-spamd argv=/usr/bin/spamc -f -e /usr/sbin/sendmail -oi -f \${sender} \${recipient}" >> /etc/postfix/master.cf
 
 
-# By default, dovecot has a bunch of configs in /etc/dovecot/conf.d/
-# These files have nice documentation if you want to read it, but it's a huge pain to go through them to organize.
-# Instead, we simply overwrite /etc/dovecot/dovecot.conf because it's easier to manage. You can get a backup of the original in /usr/share/dovecot if you want.
+# By default, dovecot has a bunch of configs in /etc/dovecot/conf.d/ These
+# files have nice documentation if you want to read it, but it's a huge pain to
+# go through them to organize.  Instead, we simply overwrite
+# /etc/dovecot/dovecot.conf because it's easier to manage. You can get a backup
+# of the original in /usr/share/dovecot if you want.
 
 echo "Creating Dovecot config..."
 
@@ -93,8 +122,8 @@ echo "# Dovecot config
 
 # If you're not a brainlet, SSL must be set to required.
 ssl = required
-ssl_cert = </etc/letsencrypt/live/$maildomain/fullchain.pem
-ssl_key = </etc/letsencrypt/live/$maildomain/privkey.pem
+ssl_cert = <$certdir/fullchain.pem
+ssl_key = <$certdir/privkey.pem
 # Plaintext login. This is safe and easy thanks to SSL.
 auth_mechanisms = plain login cram-md5
 
@@ -175,24 +204,28 @@ if header :contains \"X-Spam-Flag\" \"YES\"
 		fileinto \"Junk\";
 	}" > /var/lib/dovecot/sieve/default.sieve
 
-cut -d: -f1 /etc/passwd | grep ^vmail > /dev/null 2&>1 || useradd vmail
+cut -d: -f1 /etc/passwd | grep -q "^vmail" || useradd vmail
 chown -R vmail:vmail /var/lib/dovecot
 sievec /var/lib/dovecot/sieve/default.sieve
 
 echo "Preparing user authetication..."
-grep nullok /etc/pam.d/dovecot >/dev/null ||
+grep -q nullok /etc/pam.d/dovecot ||
 echo "auth    required        pam_unix.so nullok
 account required        pam_unix.so" >> /etc/pam.d/dovecot
 
 # OpenDKIM
 
-# A lot of the big name email services, like Google, will automatically rejectmark as spam unfamiliar and unauthenticated email addresses. As in, the server will flattly reject the email, not even deliverring it to someone's Spam folder.
+# A lot of the big name email services, like Google, will automatically
+# rejectmark as spam unfamiliar and unauthenticated email addresses. As in, the
+# server will flattly reject the email, not even deliverring it to someone's
+# Spam folder.
 
-# OpenDKIM is a way to authenticate your email so you can send to such services without a problem.
+# OpenDKIM is a way to authenticate your email so you can send to such services
+# without a problem.
 
-# add opendkim-tools ?
+# TODO: add opendkim-tools ?
 
-# Create an OpenDKIM key and put in in the proper place with proper permissions.
+# Create an OpenDKIM key in the proper place with proper permissions.
 echo "Generating OpenDKIM keys..."
 mkdir -p /etc/postfix/dkim
 opendkim-genkey -D /etc/postfix/dkim/ -d $ "$domain" -s "$subdom"
@@ -201,19 +234,19 @@ chmod g+r /etc/postfix/dkim/*
 
 # Generate the OpenDKIM info:
 echo "Configuring OpenDKIM..."
-grep "$domain" >/dev/null 2>&1 /etc/postfix/dkim/keytable ||
+grep -q "$domain" /etc/postfix/dkim/keytable ||
 echo "$subdom._domainkey.$domain $domain:mail:/etc/postfix/dkim/mail.private" >> /etc/postfix/dkim/keytable
 
-grep "$domain" >/dev/null 2>&1 /etc/postfix/dkim/signingtable ||
+grep -q "$domain" /etc/postfix/dkim/signingtable ||
 echo "*@$domain $subdom._domainkey.$domain" >> /etc/postfix/dkim/signingtable
 
-grep "127.0.0.1" >/dev/null 2>&1 /etc/postfix/dkim/trustedhosts ||
+grep -q "127.0.0.1" /etc/postfix/dkim/trustedhosts ||
 	echo "127.0.0.1
 10.1.0.0/16
 1.2.3.4/24" >> /etc/postfix/dkim/trustedhosts
 
 # ...and source it from opendkim.conf
-grep ^KeyTable /etc/opendkim.conf >/dev/null || echo "KeyTable file:/etc/postfix/dkim/keytable
+grep -q "^KeyTable" /etc/opendkim.conf || echo "KeyTable file:/etc/postfix/dkim/keytable
 SigningTable refile:/etc/postfix/dkim/signingtable
 InternalHosts refile:/etc/postfix/dkim/trustedhosts" >> /etc/opendkim.conf
 
@@ -237,16 +270,12 @@ postconf -e "smtpd_milters = inet:localhost:12301"
 postconf -e "non_smtpd_milters = inet:localhost:12301"
 postconf -e "mailbox_command = /usr/lib/dovecot/deliver"
 
-echo "Restarting Dovecot..."
-service dovecot restart && echo "Dovecot restarted."
-echo "Restarting Postfix..."
-service postfix restart && echo "Postfix restarted."
-echo "Restarting OpenDKIM..."
-service opendkim restart && echo "OpenDKIM restarted."
-echo "Restarting Spam Assassin..."
-service spamassassin restart && echo "Spamassassin restarted."
+for x in dovecot postfix opendkim spamassassin; do
+	printf "Restarting %s..." "$x"
+	service "$x" restart && printf " ...done\\n"
+done
 
-pval="$(tr -d "\n" </etc/postfix/dkim/mail.txt | sed "s/k=rsa.* \"p=/k=rsa; p=/;s/\"\s*\"//;s/\"\s*).*//" | grep -o p=.*)"
+pval="$(tr -d "\n" </etc/postfix/dkim/mail.txt | sed "s/k=rsa.* \"p=/k=rsa; p=/;s/\"\s*\"//;s/\"\s*).*//" | grep -o "p=.*")"
 echo "Here is your TXT entry:"
 echo
 echo
@@ -259,5 +288,3 @@ printf "%s\\tTXT\\t\\tv=spf1 mx a:%s -all\\n" "@" "$maildomain"
 echo
 echo
 echo "$pval"
-
-
