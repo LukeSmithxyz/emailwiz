@@ -1,6 +1,6 @@
 # Email server setup script
 
-I wrote this script during the gruelling process of installing and setting up a web server.
+I wrote this script during the gruelling process of installing and setting up an email server.
 It perfectly reproduces my successful steps to ensure the same setup time and time again.
 
 I've linked this file on Github to a shorter, more memorable address on my website so you can get it on your machine with this short command:
