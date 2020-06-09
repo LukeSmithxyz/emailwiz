@@ -125,18 +125,13 @@ ssl = required
 ssl_cert = <$certdir/fullchain.pem
 ssl_key = <$certdir/privkey.pem
 # Plaintext login. This is safe and easy thanks to SSL.
-auth_mechanisms = plain login cram-md5
+auth_mechanisms = plain login
 
 protocols = \$protocols imap
 
 # Search for valid users in /etc/passwd
 userdb {
 	driver = passwd
-}
-# Use file with cram-md5 hashed passwords to find user passwords
-passdb {
-	driver = passwd-file
-	args = scheme=cram-md5 /etc/cram-md5.pwd
 }
 #Fallback: Use plain old PAM to find user passwords
 passdb {

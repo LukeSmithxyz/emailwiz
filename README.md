@@ -30,9 +30,9 @@ Expect it to fail and you have to do bug testing and you will be very happy when
 ## Requirements
 
 - `apt purge` all your previous (failed) attempts to install and configure a mailserver. Get rid of _all_ your system settings for Postfix, Dovecot, OpenDKIM and everything else. This script builds off of a fresh install.
-- A **Debian server**. I suspect the script will run on Ubuntu as well prodided there aren't huge differences in the default setup. I've tested this on a [Vultr](https://www.vultr.com/?ref=7914655-4F) Debian server and their setup works, but I suspect other VPS hosts will have similar/possibly identical default settings which will let you run this on them.
+- A **Debian or Ubuntu server**. I've tested this on a [Vultr](https://www.vultr.com/?ref=7914655-4F) Debian server and their setup works, but I suspect other VPS hosts will have similar/possibly identical default settings which will let you run this on them.
 - An **MX record** in your DNS settings that points to your own main domain/IP. Unless you have your own DNS server, you'll put this setting on your domain registrar's site. Look up their documentation on how to do this, but it's usually really easy.
-- **SSL for your site's mail subdomain**, specifically for mail.yourdomain.tld with Let's Encrypt. The script will look to Let's Encrypt's generated configs. If you have some other SSL system, you can manually change the SSL locations in the script before running it and it should be fine.
+- **SSL for your site's mail subdomain**, specifically for mail.yourdomain.tld with Let's Encrypt. The script will look to Let's Encrypt's generated configs. If you have some other SSL system, you can manually change the SSL locations in the script before running it and it should be fine. You might want to create a dummy Apache/nginx record for your mail domain as this makes running Let's Encrypt's Certbot easier.
 - After the script runs, you'll have to add an *additional DNS TXT record* which involves the OpenDKIM key that it generates during the script.
 
 ## Caveats
