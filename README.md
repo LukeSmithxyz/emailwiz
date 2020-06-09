@@ -47,7 +47,7 @@ I honestly have no really strong preference of Vultr over other VPS providers, b
 
 ## Details
 
-- A user's mail is in `~/Mail`. Want a new email address? Create a new user and just add them to the mail group. Now they can send and receive mail. Look up using aliases too if you want for more cool stuff. Dovecot should autocreate the directories as needed.
+- A user's mail is in `~/Mail`. Want a new email address? Create a new user and just add them to the mail group, be sure to give them a password with `passwd <name>` as well. Now they can send and receive mail. Look up using aliases too if you want for more cool stuff. Dovecot should autocreate the directories as needed.
 - All dovecot configuration is just in `/etc/dovecot/dovecot.conf` instead of a dozen little config files. You can read those in `/etc/dovecot/conf.d/` for more info, but they are not called by default after running this script and the needed settings are edited into the main config.
 - Your IMAP/SMTP server will be `mail.yourdomain.tld` and your ports will be the typical ones: 993 for IMAP and 587 for SMTP.
 - Using non-encrypted ports is not allowed for safety! The login is with plaintext because that's simpler and more robust given SSL's security.
