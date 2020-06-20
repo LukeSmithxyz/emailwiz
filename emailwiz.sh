@@ -46,7 +46,7 @@ certdir="/etc/letsencrypt/live/$maildomain"
 
 Use Let's Encrypt's Certbot to get that and then rerun this script.
 
-You may need to set up a dummy $maildomain site in nginx or Apache for that to work."
+You may need to set up a dummy $maildomain site in nginx or Apache for that to work." && exit
 
 # NOTE ON POSTCONF COMMANDS
 
@@ -291,7 +291,9 @@ Add these three records to your DNS TXT records on either your registrar's site
 or your DNS server:
 
 $dkimentry
+
 $dmarcentry
+
 $spfentry
 
 Also saving these to ~/dns_emailwizard in case you want them in a file.
