@@ -275,7 +275,7 @@ done
 pval="$(tr -d "\n" </etc/postfix/dkim/mail.txt | sed "s/k=rsa.* \"p=/k=rsa; p=/;s/\"\s*\"//;s/\"\s*).*//" | grep -o "p=.*")"
 dkimentry="$subdom._domainkey.$domain\\tTXT\\tv=DKIM1; k=rsa; $pval"
 dmarcentry="_dmarc.$domain\\tTXT\\tv=DMARC1; p=none; rua=mailto:dmarc@$domain; fo=1"
-spfentry="@\\tTXT\\ttv=spf1 mx a:$maildomain -all"
+spfentry="@\\tTXT\\tv=spf1 mx a:$maildomain -all"
 
 useradd -m -G mail dmarc
 
