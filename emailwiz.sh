@@ -40,11 +40,13 @@ which opendkim-genkey >/dev/null 2>&1 || apt install opendkim-tools
 domain="$(cat /etc/mailname)"
 subdom="mail"
 maildomain="$subdom.$domain"
+certdir="/etc/letsencrypt/live/$maildomain"
 
-# Determine location of ssl certificate from common names.
-for x in /etc/letsencrypt/live/$maildomain /etc/letsencrypt/live/mail /etc/letsencrypt/live/$domain; do
-	[ -d "$x" ] && certdir="$x" && break
-done
+[ ! -d "$certdir" ] && echo "Note! You must first have a HTTPS/SSL Certificate for $maildomain.
+
+Use Let's Encrypt's Certbot to get that and then rerun this script.
+
+You may need to set up a dummy $maildomain site in nginx or Apache for that to work."
 
 # NOTE ON POSTCONF COMMANDS
 
@@ -271,15 +273,27 @@ for x in dovecot postfix opendkim spamassassin; do
 done
 
 pval="$(tr -d "\n" </etc/postfix/dkim/mail.txt | sed "s/k=rsa.* \"p=/k=rsa; p=/;s/\"\s*\"//;s/\"\s*).*//" | grep -o "p=.*")"
-echo "Here is your TXT entry:"
-echo
-echo
-echo
-printf "Record Name\\tRecord Type\\tText of entry\\n"
-# the DKIM record is this one
-printf "%s._domainkey\\tTXT\\t\\tv=DKIM1; k=rsa; %s\\n" "$subdom" "$pval"
-# the SPF record is this one
-printf "%s\\tTXT\\t\\tv=spf1 mx a:%s -all\\n" "@" "$maildomain"
-echo
-echo
-echo "$pval"
+dkimentry="$subdom._domainkey.$domain\\tTXT\\tv=DKIM1; k=rsa; $pval"
+dmarcentry="_dmarc.$domain\\tTXT\\tv=DMARC1; p=none; rua=mailto:dmarc@$domain; fo=1"
+spfentry="@\\tTXT\\ttv=spf1 mx a:$maildomain -all"
+
+useradd -m -G mail dmarc
+
+echo "$dkimentry
+$spfentry" > "$HOME/dns_emailwizard"
+
+echo " _   _
+| \ | | _____      ___
+|  \| |/ _ \ \ /\ / (_)
+| |\  | (_) \ V  V / _
+|_| \_|\___/ \_/\_/ (_)
+Add these three records to your DNS TXT records on either your registrar's site
+or your DNS server:
+
+$dkimentry
+$dmarcentry
+$spfentry
+
+Also saving these to ~/dns_emailwizard in case you want them in a file.
+
+Once you do that, you're done! Check the README for how to add users/accounts and how to log in."
