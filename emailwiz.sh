@@ -280,13 +280,17 @@ spfentry="@\\tTXT\\ttv=spf1 mx a:$maildomain -all"
 useradd -m -G mail dmarc
 
 echo "$dkimentry
+$dmarcentry
 $spfentry" > "$HOME/dns_emailwizard"
 
-echo " _   _
+echo "
+
+ _   _
 | \ | | _____      ___
 |  \| |/ _ \ \ /\ / (_)
 | |\  | (_) \ V  V / _
 |_| \_|\___/ \_/\_/ (_)
+
 Add these three records to your DNS TXT records on either your registrar's site
 or your DNS server:
 
@@ -296,6 +300,10 @@ $dmarcentry
 
 $spfentry
 
+NOTE: You may need to omit the \`.$domain\` portion at the beginning if
+inputting them in a registrar's web interface.
+
 Also saving these to ~/dns_emailwizard in case you want them in a file.
 
-Once you do that, you're done! Check the README for how to add users/accounts and how to log in."
+Once you do that, you're done! Check the README for how to add users/accounts
+and how to log in."
