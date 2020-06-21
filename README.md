@@ -46,12 +46,16 @@ actually works perfectly.
 2. **A Let's Encrypt SSL certificate for your site's `mail.` subdomain**.
    Create a nginx/apache site at `mail.<yourdomain.com>` and get a certificate
    for it with Let's Encrypt's [Certbot](https://certbot.eff.org/).
-3. - You need two little DNS records set on your domain registrar's site/DNS
+3. You need two little DNS records set on your domain registrar's site/DNS
    server: (1) an **MX record** pointing to your own main domain/IP and (2) a
    **CNAME record** for your `mail.` subdomain.
 4. `apt purge` all your previous (failed) attempts to install and configure a
    mailserver. Get rid of _all_ your system settings for Postfix, Dovecot,
    OpenDKIM and everything else. This script builds off of a fresh install.
+5. Some VPS providers block port 25 (used to send mail). You may need to
+   request that this port be opened to send mail successfully. Although I have
+   never had to do this on a Vultr VPS, others have had this issue so if you
+   cannot send, contact your VPS provider.
 
 ## Post-install requirement!
 
