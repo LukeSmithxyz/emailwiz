@@ -109,3 +109,17 @@ You can tweak Postfix (sending mail
 
 If this script or documentation has saved you some frustration, you can donate
 to support me at [lukesmith.xyz/donate](https://lukesmith.xyz/donate.html).
+
+## Troubleshooting -- Can't send mail?
+
+- Always check `journalctl -xe` to see the specific problem.
+- Go to [this site](https://appmaildev.com/en/dkim) to text your TXT records.
+  If your DKIM, SPF or DMARC tests fail you probably copied in the TXT records
+  incorrectly.
+- If everything looks good and you *can* send mail, but it still goes to Gmail
+  or another big provider's spam directory, your domain (especially if it's a
+  new one) might be on a public spam list.  Check
+  [this site](https://mxtoolbox.com/blacklists.aspx) to see if it is. Don't
+  worry if you are: sometimes especially new domains are automatically assumed
+  to be spam temporaily. If you are blacklisted by one of these, look into it
+  and it will explain why and how to remove yourself.
