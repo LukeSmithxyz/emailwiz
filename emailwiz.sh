@@ -279,11 +279,11 @@ spfentry="@\\tTXT\\tv=spf1 mx a:$maildomain -all"
 
 useradd -m -G mail dmarc
 
-echo "$dkimentry
+echo -e "$dkimentry
 $dmarcentry
 $spfentry" > "$HOME/dns_emailwizard"
 
-echo "
+echo -e "
 
  _   _
 | \ | | _____      ___
