@@ -49,10 +49,21 @@ actually works perfectly.
 3. You need two little DNS records set on your domain registrar's site/DNS
    server: (1) an **MX record** pointing to your own main domain/IP and (2) a
    **CNAME record** for your `mail.` subdomain.
-4. `apt purge` all your previous (failed) attempts to install and configure a
+4. **A Reverse DNS entry for your site.** Go to your VPS settings and add an
+   entry for your IPV4 Reverse DNS that goes from your IP address to
+   `mail.<yourdomain.com>`. If you would like IPV6, you can do the same for
+   that. This has been tested on Vultr, and all decent VPS hosts will have
+   a section on their instance settings page to add a reverse DNS PTR entry.
+   You can use the 'Test Email Server' or ':smtp' tool on
+   [mxtoolbox](https://mxtoolbox.com/SuperTool.aspx) to test if you set up
+   a reverse DNS correctly. This step is not required for everyone, but some
+   big email services like gmail will stop emails coming from mail servers
+   with no/invalid rDNS lookups. This means your email will fail to even
+   make it to the receipients spam folder; it will never make it to them.
+5. `apt purge` all your previous (failed) attempts to install and configure a
    mailserver. Get rid of _all_ your system settings for Postfix, Dovecot,
    OpenDKIM and everything else. This script builds off of a fresh install.
-5. Some VPS providers block port 25 (used to send mail). You may need to
+6. Some VPS providers block port 25 (used to send mail). You may need to
    request that this port be opened to send mail successfully. Although I have
    never had to do this on a Vultr VPS, others have had this issue so if you
    cannot send, contact your VPS provider.
