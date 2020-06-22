@@ -225,7 +225,7 @@ account required        pam_unix.so" >> /etc/pam.d/dovecot
 # Create an OpenDKIM key in the proper place with proper permissions.
 echo "Generating OpenDKIM keys..."
 mkdir -p /etc/postfix/dkim
-opendkim-genkey -D /etc/postfix/dkim/ -d $ "$domain" -s "$subdom"
+opendkim-genkey -D /etc/postfix/dkim/ -d "$domain" -s "$subdom"
 chgrp opendkim /etc/postfix/dkim/*
 chmod g+r /etc/postfix/dkim/*
 
