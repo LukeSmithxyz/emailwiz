@@ -20,8 +20,8 @@ actually works perfectly.
 
 ## This script installs
 
-- **Postfix** to send mail.
-- **Dovecot** to receive mail.
+- **Postfix** to send and receive mail.
+- **Dovecot** to get mail to your email client (mutt, Thunderbird, etc).
 - Config files that unique the two above securely with native log-ins.
 - **Spamassassin** to prevent spam and allow you to make custom filters.
 - **OpenDKIM** to validate you so you can send to Gmail and other big sites.
