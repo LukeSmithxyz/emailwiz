@@ -70,8 +70,9 @@ actually works perfectly.
 
 ## Post-install requirement!
 
-- After the script runs, you'll have to add two *additional DNS TXT records*
-  which involves the OpenDKIM key that it generates during the script.
+- After the script runs, you'll have to add additional DNS TXT records which
+  are displayed at the end when the script is complete. They will help ensure
+  your mail is validated and secure.
 
 ## Making new users/mail accounts
 
@@ -89,10 +90,10 @@ Cassie already exists and we want to let her receive mail to. Just run:
 usermod -a -G mail cassie
 ```
 
-A user's mail will appear in `~/.Mail/`. I you want to see your mail while
-ssh'd in the server, you could just install mutt, add `set spoolfile="+Inbox"`
-to your `~/.muttrc` and use mutt to view and reply to mail. You'll probably
-want to log in remotely though:
+A user's mail will appear in `~/Mail/`. I you want to see your mail while ssh'd
+in the server, you could just install mutt, add `set spoolfile="+Inbox"` to
+your `~/.muttrc` and use mutt to view and reply to mail. You'll probably want
+to log in remotely though:
 
 ## Logging in from Thunderbird or mutt (and others) remotely
 
@@ -124,7 +125,7 @@ to support me at [lukesmith.xyz/donate](https://lukesmith.xyz/donate.html).
 ## Troubleshooting -- Can't send mail?
 
 - Always check `journalctl -xe` to see the specific problem.
-- Go to [this site](https://appmaildev.com/en/dkim) to text your TXT records.
+- Go to [this site](https://appmaildev.com/en/dkim) to test your TXT records.
   If your DKIM, SPF or DMARC tests fail you probably copied in the TXT records
   incorrectly.
 - If everything looks good and you *can* send mail, but it still goes to Gmail
