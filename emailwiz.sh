@@ -64,7 +64,6 @@ postconf -e "smtpd_use_tls = yes"
 postconf -e "smtpd_tls_auth_only = yes"
 postconf -e "smtp_tls_security_level = may"
 postconf -e "smtp_tls_loglevel = 1"
-postconf -e "smtp_tls_CAfile=$certdir/cert.pem"
 
 # Here we tell Postfix to look to Dovecot for authenticating users/passwords.
 # Dovecot will be putting an authentication socket in /var/spool/postfix/private/auth
