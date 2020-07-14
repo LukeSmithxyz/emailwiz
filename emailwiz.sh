@@ -125,6 +125,7 @@ echo "# Dovecot config
 ssl = required
 ssl_cert = <$certdir/fullchain.pem
 ssl_key = <$certdir/privkey.pem
+ssl_dh = </usr/share/dovecot/dh.pem
 # Plaintext login. This is safe and easy thanks to SSL.
 auth_mechanisms = plain login
 
