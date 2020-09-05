@@ -90,7 +90,7 @@ Cassie already exists and we want to let her receive mail to. Just run:
 usermod -a -G mail cassie
 ```
 
-A user's mail will appear in `~/Mail/`. I you want to see your mail while ssh'd
+A user's mail will appear in `~/Mail/`. If you want to see your mail while ssh'd
 in the server, you could just install mutt, add `set spoolfile="+Inbox"` to
 your `~/.muttrc` and use mutt to view and reply to mail. You'll probably want
 to log in remotely though:
