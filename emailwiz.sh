@@ -42,7 +42,9 @@ subdom="mail"
 maildomain="$subdom.$domain"
 certdir="/etc/letsencrypt/live/$maildomain"
 
-[ ! -d "$certdir" ] && echo "Note! You must first have a HTTPS/SSL Certificate for $maildomain.
+[ ! -d "$certdir" ] && certdir="$(dirname "$(certbot certificates 2>/dev/null | grep "$maildomain" -A 2 | awk '/Certificate Path/ {print $3}')")"
+
+[ ! -d "$certdir" ] && echo "Note! You must first have a Let's Encrypt Certbot HTTPS/SSL Certificate for $maildomain.
 
 Use Let's Encrypt's Certbot to get that and then rerun this script.
 
