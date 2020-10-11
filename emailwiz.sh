@@ -274,7 +274,7 @@ for x in dovecot postfix opendkim spamassassin; do
 	service "$x" restart && printf " ...done\\n"
 done
 
-pval="$(tr -d "\n" </etc/postfix/dkim/mail.txt | sed "s/k=rsa.* \"p=/k=rsa; p=/;s/\"\s*\"//;s/\"\s*).*//" | grep -o "p=.*")"
+pval="$(tr -d "\n" </etc/postfix/dkim/$subdom.txt | sed "s/k=rsa.* \"p=/k=rsa; p=/;s/\"\s*\"//;s/\"\s*).*//" | grep -o "p=.*")"
 dkimentry="$subdom._domainkey.$domain	TXT	v=DKIM1; k=rsa; $pval"
 dmarcentry="_dmarc.$domain	TXT	v=DMARC1; p=none; rua=mailto:dmarc@$domain; fo=1"
 spfentry="@	TXT	v=spf1 mx a:$maildomain -all"
