@@ -253,7 +253,7 @@ sed -i '/^#Canonicalization/s/simple/relaxed\/simple/' /etc/opendkim.conf
 sed -i '/^#Canonicalization/s/^#//' /etc/opendkim.conf
 
 sed -e '/Socket/s/^#*/#/' -i /etc/opendkim.conf
-sed -i '/\local:\/var\/run\/opendkim\/opendkim.sock/a \Socket\t\t\tinet:12301@localhost' /etc/opendkim.conf
+grep -q "^Socket\s*inet:12301@localhost" /etc/opendkim.conf || echo "Socket inet:12301@localhost" >> /etc/opendkim.conf
 
 # OpenDKIM daemon settings, removing previously activated socket.
 sed -i "/^SOCKET/d" /etc/default/opendkim && echo "SOCKET=\"inet:12301@localhost\"" >> /etc/default/opendkim
