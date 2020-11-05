@@ -114,7 +114,14 @@ spamassassin unix -     n       n       -       -       pipe
 # /etc/dovecot/dovecot.conf because it's easier to manage. You can get a backup
 # of the original in /usr/share/dovecot if you want.
 
-echo "Creating Dovecot config..."
+dovecot_v="$(dovecot --version | cut -d ' ' -f1 | cut -d '.' -f1-2)"
+dovecot_v_major=${dovecot_v%.*} 
+dovecot_v_minor=${dovecot_v#*.} 
+dovecot_dh="ssl_dh = </usr/share/dovecot/dh.pem"
+
+[ $dovecot_v_major -eq 2 ] && [ $dovecot_v_minor -lt 3 ] || [ $dovecot_v_major -lt 2 ] &&  dovecot_dh="#$dovecot_dh"
+
+echo "Creating Dovecot config (v $dovecot_v)..."
 
 echo "# Dovecot config
 # Note that in the dovecot conf, you can use:
@@ -127,7 +134,9 @@ echo "# Dovecot config
 ssl = required
 ssl_cert = <$certdir/fullchain.pem
 ssl_key = <$certdir/privkey.pem
-ssl_dh = </usr/share/dovecot/dh.pem
+#You have to add ssl_dh if your Dovecot version is 2.3 or greater!
+#https://wiki.dovecot.org/SSL/DovecotConfiguration#SSL_security_settings
+$dovecot_dh
 # Plaintext login. This is safe and easy thanks to SSL.
 auth_mechanisms = plain login
 
