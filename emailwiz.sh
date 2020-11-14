@@ -130,6 +130,7 @@ ssl_key = <$certdir/privkey.pem
 ssl_dh = </usr/share/dovecot/dh.pem
 # Plaintext login. This is safe and easy thanks to SSL.
 auth_mechanisms = plain login
+auth_username_format = %n
 
 protocols = \$protocols imap
 
@@ -286,7 +287,6 @@ $dmarcentry
 $spfentry" > "$HOME/dns_emailwizard"
 
 echo "
-
  _   _
 | \ | | _____      ___
 |  \| |/ _ \ \ /\ / (_)
