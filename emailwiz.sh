@@ -66,6 +66,15 @@ postconf -e "smtpd_use_tls = yes"
 postconf -e "smtpd_tls_auth_only = yes"
 postconf -e "smtp_tls_security_level = may"
 postconf -e "smtp_tls_loglevel = 1"
+postconf -e "smtp_tls_CAfile=$certdir/cert.pem"
+postconf -e "smtpd_tls_mandatory_protocols = !SSLv2, !SSLv3, !TLSv1, !TLSv1.1"
+postconf -e "smtp_tls_mandatory_protocols = !SSLv2, !SSLv3, !TLSv1, !TLSv1.1"
+postconf -e "smtpd_tls_protocols = !SSLv2, !SSLv3, !TLSv1, !TLSv1.1"
+postconf -e "smtp_tls_protocols = !SSLv2, !SSLv3, !TLSv1, !TLSv1.1"
+postconf -e "tls_preempt_cipherlist = yes"
+postconf -e "smtpd_tls_exclude_ciphers = aNULL, LOW, EXP, MEDIUM, ADH, AECDH, MD5,
+                            DSS, ECDSA, CAMELLIA128, 3DES, CAMELLIA256,
+                            RSA+AES, eNULL"
 
 # Here we tell Postfix to look to Dovecot for authenticating users/passwords.
 # Dovecot will be putting an authentication socket in /var/spool/postfix/private/auth
@@ -127,6 +136,9 @@ echo "# Dovecot config
 ssl = required
 ssl_cert = <$certdir/fullchain.pem
 ssl_key = <$certdir/privkey.pem
+ssl_min_protocol = TLSv1.2
+ssl_cipher_list = ALL:!RSA:!CAMELLIA:!aNULL:!eNULL:!LOW:!3DES:!MD5:!EXP:!PSK:!SRP:!DSS:!RC4:!SHA1:!SHA256:!SHA384:!LOW@STRENGTH
+ssl_prefer_server_ciphers = yes
 ssl_dh = </usr/share/dovecot/dh.pem
 # Plaintext login. This is safe and easy thanks to SSL.
 auth_mechanisms = plain login
