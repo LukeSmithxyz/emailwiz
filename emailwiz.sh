@@ -42,7 +42,9 @@ subdom="mail"
 maildomain="$subdom.$domain"
 certdir="/etc/letsencrypt/live/$maildomain"
 
-[ ! -d "$certdir" ] && echo "Note! You must first have a HTTPS/SSL Certificate for $maildomain.
+[ ! -d "$certdir" ] && certdir="$(dirname "$(certbot certificates 2>/dev/null | grep "$maildomain" -A 2 | awk '/Certificate Path/ {print $3}')")"
+
+[ ! -d "$certdir" ] && echo "Note! You must first have a Let's Encrypt Certbot HTTPS/SSL Certificate for $maildomain.
 
 Use Let's Encrypt's Certbot to get that and then rerun this script.
 
@@ -137,8 +139,10 @@ ssl_key = <$certdir/privkey.pem
 ssl_min_protocol = TLSv1.2
 ssl_cipher_list = ALL:!RSA:!CAMELLIA:!aNULL:!eNULL:!LOW:!3DES:!MD5:!EXP:!PSK:!SRP:!DSS:!RC4:!SHA1:!SHA256:!SHA384:!LOW@STRENGTH
 ssl_prefer_server_ciphers = yes
+ssl_dh = </usr/share/dovecot/dh.pem
 # Plaintext login. This is safe and easy thanks to SSL.
 auth_mechanisms = plain login
+auth_username_format = %n
 
 protocols = \$protocols imap
 
@@ -262,7 +266,7 @@ sed -i '/^#Canonicalization/s/simple/relaxed\/simple/' /etc/opendkim.conf
 sed -i '/^#Canonicalization/s/^#//' /etc/opendkim.conf
 
 sed -e '/Socket/s/^#*/#/' -i /etc/opendkim.conf
-sed -i '/\local:\/var\/run\/opendkim\/opendkim.sock/a \Socket\t\t\tinet:12301@localhost' /etc/opendkim.conf
+grep -q "^Socket\s*inet:12301@localhost" /etc/opendkim.conf || echo "Socket inet:12301@localhost" >> /etc/opendkim.conf
 
 # OpenDKIM daemon settings, removing previously activated socket.
 sed -i "/^SOCKET/d" /etc/default/opendkim && echo "SOCKET=\"inet:12301@localhost\"" >> /etc/default/opendkim
@@ -283,7 +287,7 @@ for x in dovecot postfix opendkim spamassassin; do
 	service "$x" restart && printf " ...done\\n"
 done
 
-pval="$(tr -d "\n" </etc/postfix/dkim/mail.txt | sed "s/k=rsa.* \"p=/k=rsa; p=/;s/\"\s*\"//;s/\"\s*).*//" | grep -o "p=.*")"
+pval="$(tr -d "\n" </etc/postfix/dkim/$subdom.txt | sed "s/k=rsa.* \"p=/k=rsa; p=/;s/\"\s*\"//;s/\"\s*).*//" | grep -o "p=.*")"
 dkimentry="$subdom._domainkey.$domain	TXT	v=DKIM1; k=rsa; $pval"
 dmarcentry="_dmarc.$domain	TXT	v=DMARC1; p=none; rua=mailto:dmarc@$domain; fo=1"
 spfentry="@	TXT	v=spf1 mx a:$maildomain -all"
@@ -295,7 +299,6 @@ $dmarcentry
 $spfentry" > "$HOME/dns_emailwizard"
 
 echo "
-
  _   _
 | \ | | _____      ___
 |  \| |/ _ \ \ /\ / (_)

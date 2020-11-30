@@ -1,28 +1,24 @@
 # Email server setup script
 
-I wrote this script during the gruelling process of installing and setting up
+I wrote this script during the grueling process of installing and setting up
 an email server.  It perfectly reproduces my successful steps to ensure the
 same setup time and time again.
 
 I've linked this file on Github to a shorter, more memorable address on my
 website so you can get it on your machine with this short command:
 
-```
+```sh
 curl -LO lukesmith.xyz/emailwiz.sh
 ```
 
 When prompted by a dialog menu at the beginning, select "Internet Site", then
 give your full domain without any subdomain, i.e. `lukesmith.xyz`.
 
-Read this readme and peruse the script's comments before running it.  Expect it
-to fail and you have to do bug testing and you will be very happy when it
-actually works perfectly.
-
 ## This script installs
 
 - **Postfix** to send and receive mail.
-- **Dovecot** to get mail to your email client (mutt, Thunderbird, etc).
-- Config files that unique the two above securely with native log-ins.
+- **Dovecot** to get mail to your email client (mutt, Thunderbird, etc.).
+- Config files that link the two above securely with native log-ins.
 - **Spamassassin** to prevent spam and allow you to make custom filters.
 - **OpenDKIM** to validate you so you can send to Gmail and other big sites.
 
@@ -50,18 +46,19 @@ actually works perfectly.
    server: (1) an **MX record** pointing to your own main domain/IP and (2) a
    **CNAME record** for your `mail.` subdomain.
 4. **A Reverse DNS entry for your site.** Go to your VPS settings and add an
-   entry for your IPV4 Reverse DNS that goes from your IP address to
-   `mail.<yourdomain.com>`. If you would like IPV6, you can do the same for
-   that. This has been tested on Vultr, and all decent VPS hosts will have
-   a section on their instance settings page to add a reverse DNS PTR entry.
+   entry for your IPv4 Reverse DNS that goes from your IP address to
+   `<yourdomain.com>` (not mail subdomain). If you would like IPv6, you can do
+   the same for that. This has been tested on Vultr, and all decent VPS hosts
+   will have a section on their instance settings page to add a reverse DNS PTR
+   entry.
    You can use the 'Test Email Server' or ':smtp' tool on
    [mxtoolbox](https://mxtoolbox.com/SuperTool.aspx) to test if you set up
    a reverse DNS correctly. This step is not required for everyone, but some
-   big email services like gmail will stop emails coming from mail servers
+   big email services like Gmail will stop emails coming from mail servers
    with no/invalid rDNS lookups. This means your email will fail to even
-   make it to the receipients spam folder; it will never make it to them.
+   make it to the recipients spam folder; it will never make it to them.
 5. `apt purge` all your previous (failed) attempts to install and configure a
-   mailserver. Get rid of _all_ your system settings for Postfix, Dovecot,
+   mail server. Get rid of _all_ your system settings for Postfix, Dovecot,
    OpenDKIM and everything else. This script builds off of a fresh install.
 6. Some VPS providers block port 25 (used to send mail). You may need to
    request that this port be opened to send mail successfully. Although I have
@@ -70,8 +67,9 @@ actually works perfectly.
 
 ## Post-install requirement!
 
-- After the script runs, you'll have to add two *additional DNS TXT records*
-  which involves the OpenDKIM key that it generates during the script.
+- After the script runs, you'll have to add additional DNS TXT records which
+  are displayed at the end when the script is complete. They will help ensure
+  your mail is validated and secure.
 
 ## Making new users/mail accounts
 
@@ -89,10 +87,10 @@ Cassie already exists and we want to let her receive mail to. Just run:
 usermod -a -G mail cassie
 ```
 
-A user's mail will appear in `~/.Mail/`. I you want to see your mail while
-ssh'd in the server, you could just install mutt, add `set spoolfile="+Inbox"`
-to your `~/.muttrc` and use mutt to view and reply to mail. You'll probably
-want to log in remotely though:
+A user's mail will appear in `~/Mail/`. If you want to see your mail while ssh'd
+in the server, you could just install mutt, add `set spoolfile="+Inbox"` to
+your `~/.muttrc` and use mutt to view and reply to mail. You'll probably want
+to log in remotely though:
 
 ## Logging in from Thunderbird or mutt (and others) remotely
 
@@ -103,28 +101,24 @@ email program. For my domain, the server information will be as follows:
 - SMTP port: 587
 - IMAP server: `mail.lukesmith.xyz`
 - IMAP port: 993
-- Username `luke` (I.e. *not* `luke@lukesmith.xyz`)
 
-The last point is important. Many email systems use a full email address on
-login. Since we just simply use local PAM logins, only the user's name is used
-(this makes a difference if you're using my
-[mutt-wizard](https://github.com/lukesmithxyz/mutt-wizard), etc.).
-
-## Tweaking things
-
-You're a big boy now if you have your own mail server!
-
-You can tweak Postfix (sending mail
+In previous versions of emailwiz, you also had to log on with *only* your
+username (i.e. `luke`) rather than your whole email address (i.e.
+`luke@lukesmith.xyz`), which caused some confusion.  This is no longer the
+case.
 
 ## Benefited from this?
 
-If this script or documentation has saved you some frustration, you can donate
-to support me at [lukesmith.xyz/donate](https://lukesmith.xyz/donate.html).
+I am always glad to hear this script is still making life easy for people!  If
+this script or documentation has saved you some frustration, you can donate to
+support me at [lukesmith.xyz/donate](https://lukesmith.xyz/donate.html).
 
 ## Troubleshooting -- Can't send mail?
 
 - Always check `journalctl -xe` to see the specific problem.
-- Go to [this site](https://appmaildev.com/en/dkim) to text your TXT records.
+- Check with your VPS host and ask them to enable mail ports. Some providers
+  disable them by default. It shouldn't take any time.
+- Go to [this site](https://appmaildev.com/en/dkim) to test your TXT records.
   If your DKIM, SPF or DMARC tests fail you probably copied in the TXT records
   incorrectly.
 - If everything looks good and you *can* send mail, but it still goes to Gmail
@@ -134,3 +128,5 @@ to support me at [lukesmith.xyz/donate](https://lukesmith.xyz/donate.html).
   worry if you are: sometimes especially new domains are automatically assumed
   to be spam temporaily. If you are blacklisted by one of these, look into it
   and it will explain why and how to remove yourself.
+- Check your DNS settings using [this site](https://intodns.com/), it'll report any issues with your MX records
+- Ensure that port 25 is open on your server. [Vultr](https://www.vultr.com/docs/what-ports-are-blocked) for instance blocks this by default, you need to open a support ticket with them to open it. You can't send mail if 25 is blocked
