@@ -38,7 +38,7 @@ apt install postfix dovecot-imapd dovecot-sieve opendkim spamassassin spamc
 # Check if OpenDKIM is installed and install it if not.
 which opendkim-genkey >/dev/null 2>&1 || apt install opendkim-tools
 domain="$(cat /etc/mailname)"
-subdom="mail"
+subdom=${MAIL_SUBDOM:-mail}
 maildomain="$subdom.$domain"
 certdir="/etc/letsencrypt/live/$maildomain"
 
@@ -247,7 +247,7 @@ chmod g+r /etc/postfix/dkim/*
 # Generate the OpenDKIM info:
 echo "Configuring OpenDKIM..."
 grep -q "$domain" /etc/postfix/dkim/keytable 2>/dev/null ||
-echo "$subdom._domainkey.$domain $domain:mail:/etc/postfix/dkim/mail.private" >> /etc/postfix/dkim/keytable
+echo "$subdom._domainkey.$domain $domain:$subdom:/etc/postfix/dkim/$subdom.private" >> /etc/postfix/dkim/keytable
 
 grep -q "$domain" /etc/postfix/dkim/signingtable 2>/dev/null ||
 echo "*@$domain $subdom._domainkey.$domain" >> /etc/postfix/dkim/signingtable
