@@ -1,8 +1,11 @@
 # Email server setup script
 
 I wrote this script during the grueling process of installing and setting up
-an email server.  It perfectly reproduces my successful steps to ensure the
-same setup time and time again.
+an email server. It perfectly reproduces my successful steps to ensure the
+same setup time and time again, now with many improvements.
+
+I'm glad to say that dozens, hundreds of people have now used it and there is a
+sizeable network of people with email servers thanks to this script.
 
 I've linked this file on Github to a shorter, more memorable address on my
 website so you can get it on your machine with this short command:
@@ -40,8 +43,6 @@ give your full domain without any subdomain, i.e. `lukesmith.xyz`.
    them. Note that the affiliate link there to Vultr gives you a $100 credit
    for the first month to play around.
 2. **A Let's Encrypt SSL certificate for your site's `mail.` subdomain**.
-   Create a nginx/apache site at `mail.<yourdomain.com>` and get a certificate
-   for it with Let's Encrypt's [Certbot](https://certbot.eff.org/).
 3. You need two little DNS records set on your domain registrar's site/DNS
    server: (1) an **MX record** pointing to your own main domain/IP and (2) a
    **CNAME record** for your `mail.` subdomain.
@@ -60,10 +61,10 @@ give your full domain without any subdomain, i.e. `lukesmith.xyz`.
 5. `apt purge` all your previous (failed) attempts to install and configure a
    mail server. Get rid of _all_ your system settings for Postfix, Dovecot,
    OpenDKIM and everything else. This script builds off of a fresh install.
-6. Some VPS providers block port 25 (used to send mail). You may need to
-   request that this port be opened to send mail successfully. Although I have
-   never had to do this on a Vultr VPS, others have had this issue so if you
-   cannot send, contact your VPS provider.
+6. Some VPS providers block mail port numbers like 25, 933 or 587 by default.
+   You may need to request these ports be opened to send mail successfully.
+   Vultr and most other VPS providers will respond immediately and open the
+   ports for you if you open a support ticket.
 
 ## Post-install requirement!
 
@@ -81,7 +82,7 @@ passwd billy
 ```
 
 Any user added to the `mail` group will be able to receive mail. Suppose a user
-Cassie already exists and we want to let her receive mail to. Just run:
+Cassie already exists and we want to let her receive mail too. Just run:
 
 ```
 usermod -a -G mail cassie
@@ -104,7 +105,7 @@ email program. For my domain, the server information will be as follows:
 
 In previous versions of emailwiz, you also had to log on with *only* your
 username (i.e. `luke`) rather than your whole email address (i.e.
-`luke@lukesmith.xyz`), which caused some confusion.  This is no longer the
+`luke@lukesmith.xyz`), which caused some confusion. This is no longer the
 case.
 
 ## Benefited from this?
@@ -126,5 +127,5 @@ support me at [lukesmith.xyz/donate](https://lukesmith.xyz/donate.html).
   new one) might be on a public spam list.  Check
   [this site](https://mxtoolbox.com/blacklists.aspx) to see if it is. Don't
   worry if you are: sometimes especially new domains are automatically assumed
-  to be spam temporaily. If you are blacklisted by one of these, look into it
-  and it will explain why and how to remove yourself.
+  to be spam temporarily. If you are blacklisted by one of these, look into it
+  and it will explain how to remove yourself.

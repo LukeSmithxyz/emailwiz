@@ -208,17 +208,17 @@ cut -d: -f1 /etc/passwd | grep -q "^vmail" || useradd vmail
 chown -R vmail:vmail /var/lib/dovecot
 sievec /var/lib/dovecot/sieve/default.sieve
 
-echo "Preparing user authetication..."
+echo "Preparing user authentication..."
 grep -q nullok /etc/pam.d/dovecot ||
 echo "auth    required        pam_unix.so nullok
 account required        pam_unix.so" >> /etc/pam.d/dovecot
 
 # OpenDKIM
 
-# A lot of the big name email services, like Google, will automatically
-# rejectmark as spam unfamiliar and unauthenticated email addresses. As in, the
-# server will flattly reject the email, not even deliverring it to someone's
-# Spam folder.
+# A lot of the big name email services, like Google, will automatically reject
+# as spam unfamiliar and unauthenticated email addresses. As in, the server
+# will flatly reject the email, not even delivering it to someone's Spam
+# folder.
 
 # OpenDKIM is a way to authenticate your email so you can send to such services
 # without a problem.
