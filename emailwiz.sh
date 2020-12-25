@@ -280,7 +280,7 @@ postconf -e "smtpd_milters = inet:localhost:12301"
 postconf -e "non_smtpd_milters = inet:localhost:12301"
 postconf -e "mailbox_command = /usr/lib/dovecot/deliver"
 
-for x in spamassassin opendkim dovecot postfix do
+for x in spamassassin opendkim dovecot postfix; do
 	printf "Restarting %s..." "$x"
 	service "$x" restart && printf " ...done\\n"
 done
