@@ -62,7 +62,7 @@ echo "Configuring Postfix's main.cf..."
 # Change the cert/key files to the default locations of the Let's Encrypt cert/key
 postconf -e "smtpd_tls_key_file=$certdir/privkey.pem"
 postconf -e "smtpd_tls_cert_file=$certdir/fullchain.pem"
-postconf -e "smtpd_use_tls = yes"
+postconf -e "smtpd_tls_security_level = may"
 postconf -e "smtpd_tls_auth_only = yes"
 postconf -e "smtp_tls_security_level = may"
 postconf -e "smtp_tls_loglevel = 1"
