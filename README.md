@@ -135,3 +135,8 @@ support me at [lukesmith.xyz/donate](https://lukesmith.xyz/donate.html).
   [Vultr](https://www.vultr.com/docs/what-ports-are-blocked) for instance
   blocks this by default, you need to open a support ticket with them to open
   it. You can't send mail if 25 is blocked
+- Keep in mind that .xyz domains are considered "NTLD" or NEW Top Level Domains
+and Spam Assassin and other spam blockers (especially corporate/enterprise spam blockers)
+will block these NTLD's purely based on this fact alone. Some corporate and/or enterprise
+email filters are much more agressive than Gmail's. Keep this in mind when you try to send
+an email to a friend who works at a large company and they never receive your email.
