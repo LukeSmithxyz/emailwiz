@@ -45,7 +45,10 @@ give your full domain without any subdomain, i.e. `lukesmith.xyz`.
 2. **A Let's Encrypt SSL certificate for your site's `mail.` subdomain**.
 3. You need two little DNS records set on your domain registrar's site/DNS
    server: (1) an **MX record** pointing to your own main domain/IP and (2) a
-   **CNAME record** for your `mail.` subdomain.
+   **CNAME record** for your `mail.` subdomain. NOTE: You can't point an MX
+   Record to a CNAME or Alias BUT you can create a second A record for
+   subdomain.domain.tld (e.g. mail.lukesmith.xyz) and refer it to the IP address
+   of your incoming mail server.
 4. **A Reverse DNS entry for your site.** Go to your VPS settings and add an
    entry for your IPv4 Reverse DNS that goes from your IP address to
    `<yourdomain.com>` (not mail subdomain). If you would like IPv6, you can do
