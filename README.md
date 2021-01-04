@@ -54,7 +54,10 @@ give your full domain without any subdomain, i.e. `lukesmith.xyz`.
    `<yourdomain.com>` (not mail subdomain). If you would like IPv6, you can do
    the same for that. This has been tested on Vultr, and all decent VPS hosts
    will have a section on their instance settings page to add a reverse DNS PTR
-   entry.
+   entry. NOTE: If you host both your email and website on the same server
+   (e.g. Postfix and NGINX), your Reverse DNS entry will need to go from your IP
+   address to your mail subdomain (i.e. mail.lukesmith.xyz) and not to `<yourdomain.com>`
+   (i.e. lukesmith.xyz).
    You can use the 'Test Email Server' or ':smtp' tool on
    [mxtoolbox](https://mxtoolbox.com/SuperTool.aspx) to test if you set up
    a reverse DNS correctly. This step is not required for everyone, but some
