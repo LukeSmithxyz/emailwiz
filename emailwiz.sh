@@ -214,7 +214,7 @@ if header :contains \"X-Spam-Flag\" \"YES\"
 		fileinto \"Junk\";
 	}" > /var/lib/dovecot/sieve/default.sieve
 
-cut -d: -f1 /etc/passwd | grep -q "^vmail" || useradd vmail
+grep -q "^vmail:" /etc/passwd || useradd vmail
 chown -R vmail:vmail /var/lib/dovecot
 sievec /var/lib/dovecot/sieve/default.sieve
 
@@ -296,26 +296,26 @@ echo "$dkimentry
 $dmarcentry
 $spfentry" > "$HOME/dns_emailwizard"
 
-echo "
+printf "\033[31m
  _   _
 | \ | | _____      ___
 |  \| |/ _ \ \ /\ / (_)
 | |\  | (_) \ V  V / _
-|_| \_|\___/ \_/\_/ (_)
+|_| \_|\___/ \_/\_/ (_)\033[0m
 
 Add these three records to your DNS TXT records on either your registrar's site
 or your DNS server:
-
+\033[32m
 $dkimentry
 
 $dmarcentry
 
 $spfentry
-
+\033[0m
 NOTE: You may need to omit the \`.$domain\` portion at the beginning if
 inputting them in a registrar's web interface.
 
-Also saving these to ~/dns_emailwizard in case you want them in a file.
+Also, these are now saved to \033[34m~/dns_emailwizard\033[0m in case you want them in a file.
 
 Once you do that, you're done! Check the README for how to add users/accounts
 and how to log in."
