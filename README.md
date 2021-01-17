@@ -135,3 +135,4 @@ support me at [lukesmith.xyz/donate](https://lukesmith.xyz/donate.html).
   [Vultr](https://www.vultr.com/docs/what-ports-are-blocked) for instance
   blocks this by default, you need to open a support ticket with them to open
   it. You can't send mail if 25 is blocked
+  - Alternatively you could use a service like [Sendgrid](https://sendgrid.com/) as a relay for your outgoing mail. These services usually offer 100 outgoing mails/day for free which should be plenty. This removes the need for opening port 25 and minimizes the risk of getting blacklisted and your mail landing in spam folders. To integrate Sendgrid with Postfix you can refer to [this guide](https://sendgrid.com/docs/for-developers/sending-email/postfix/).
