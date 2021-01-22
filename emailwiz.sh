@@ -206,6 +206,11 @@ plugin {
 }
 " > /etc/dovecot/dovecot.conf
 
+# If using an old version of Dovecot, remove the ssl_dl line.
+case "$(dovecot --version)" in
+	1|2.1*|2.2*) sed -i "/^ssl_dh/d" /etc/dovecot/dovecot.conf ;;
+esac
+
 mkdir /var/lib/dovecot/sieve/
 
 echo "require [\"fileinto\", \"mailbox\"];
