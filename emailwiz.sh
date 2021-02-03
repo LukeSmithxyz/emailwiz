@@ -134,7 +134,7 @@ echo "# Dovecot config
 ssl = required
 ssl_cert = <$certdir/fullchain.pem
 ssl_key = <$certdir/privkey.pem
-ssl_min_protocol = TLSv1.3
+ssl_min_protocol = TLSv1.2
 ssl_cipher_list = EECDH+ECDSA+AESGCM:EECDH+aRSA+AESGCM:EECDH+ECDSA+SHA256:EECDH+aRSA+SHA256:EECDH+ECDSA+SHA384:EECDH+ECDSA+SHA256:EECDH+aRSA+SHA384:EDH+aRSA+AESGCM:EDH+aRSA+SHA256:EDH+aRSA:EECDH:!aNULL:!eNULL:!MEDIUM:!LOW:!3DES:!MD5:!EXP:!PSK:!SRP:!DSS:!RC4:!SEED
 ssl_prefer_server_ciphers = yes
 ssl_dh = </usr/share/dovecot/dh.pem
