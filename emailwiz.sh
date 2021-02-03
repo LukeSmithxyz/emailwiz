@@ -80,8 +80,9 @@ postconf -e "smtpd_sasl_auth_enable = yes"
 postconf -e "smtpd_sasl_type = dovecot"
 postconf -e "smtpd_sasl_path = private/auth"
 
-#postconf -e "smtpd_recipient_restrictions = permit_sasl_authenticated, permit_mynetworks, reject_unauth_destination"
-
+# Sender and recipient restrictions
+postconf -e "smtpd_recipient_restrictions = permit_sasl_authenticated, permit_mynetworks, reject_unauth_destination"
+postconf -e "smtpd_sender_restrictions = reject_unauthenticated_sender_login_mismatch"
 
 # NOTE: the trailing slash here, or for any directory name in the home_mailbox
 # command, is necessary as it distinguishes a maildir (which is the actual
@@ -89,12 +90,7 @@ postconf -e "smtpd_sasl_path = private/auth"
 # boomers want and no one else).
 postconf -e "home_mailbox = Mail/Inbox/"
 
-# Research this one:
-#postconf -e "mailbox_command ="
-
-
 # master.cf
-
 echo "Configuring Postfix's master.cf..."
 
 sed -i "/^\s*-o/d;/^\s*submission/d;/^\s*smtp/d" /etc/postfix/master.cf
@@ -238,8 +234,6 @@ account required        pam_unix.so" >> /etc/pam.d/dovecot
 # OpenDKIM is a way to authenticate your email so you can send to such services
 # without a problem.
 
-# TODO: add opendkim-tools ?
-
 # Create an OpenDKIM key in the proper place with proper permissions.
 echo "Generating OpenDKIM keys..."
 mkdir -p /etc/postfix/dkim
@@ -292,7 +286,7 @@ done
 
 pval="$(tr -d "\n" </etc/postfix/dkim/$subdom.txt | sed "s/k=rsa.* \"p=/k=rsa; p=/;s/\"\s*\"//;s/\"\s*).*//" | grep -o "p=.*")"
 dkimentry="$subdom._domainkey.$domain	TXT	v=DKIM1; k=rsa; $pval"
-dmarcentry="_dmarc.$domain	TXT	v=DMARC1; p=none; rua=mailto:dmarc@$domain; fo=1"
+dmarcentry="_dmarc.$domain	TXT	v=DMARC1; p=reject; rua=mailto:dmarc@$domain; fo=1"
 spfentry="@	TXT	v=spf1 mx a:$maildomain -all"
 
 useradd -m -G mail dmarc
