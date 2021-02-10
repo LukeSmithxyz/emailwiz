@@ -82,7 +82,6 @@ postconf -e "smtpd_sasl_path = private/auth"
 
 # Sender and recipient restrictions
 postconf -e "smtpd_recipient_restrictions = permit_sasl_authenticated, permit_mynetworks, reject_unauth_destination"
-postconf -e "smtpd_sender_restrictions = reject_unauthenticated_sender_login_mismatch"
 
 # NOTE: the trailing slash here, or for any directory name in the home_mailbox
 # command, is necessary as it distinguishes a maildir (which is the actual
