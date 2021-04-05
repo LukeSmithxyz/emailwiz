@@ -16,7 +16,6 @@
 
 # 1. Have a Debian system with a static IP and all that. Pretty much any
 # default VPS offered by a company will have all the basic stuff you need. This
-
 # script might run on Ubuntu as well. Haven't tried it. If you have, tell me
 # what happens.
 
