@@ -81,6 +81,7 @@ postconf -e "smtpd_sasl_type = dovecot"
 postconf -e "smtpd_sasl_path = private/auth"
 
 # Sender and recipient restrictions
+postconf -e "smtpd_sender_restrictions = permit_sasl_authenticated, permit_mynetworks, reject_unknown_sender_domain, reject_unauth_pipelining, reject_non_fqdn_sender, reject_sender_login_mismatch, reject_authenticated_sender_login_mismatch, reject_known_sender_login_mismatch, reject_unauthenticated_sender_login_mismatch"
 postconf -e "smtpd_recipient_restrictions = permit_sasl_authenticated, permit_mynetworks, reject_unauth_destination"
 
 # NOTE: the trailing slash here, or for any directory name in the home_mailbox
