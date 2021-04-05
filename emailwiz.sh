@@ -15,7 +15,8 @@
 # DEPENDENCIES BEFORE RUNNING
 
 # 1. Have a Debian system with a static IP and all that. Pretty much any
-# default VPS offered by a company will have all the basic stuff you need. This
+# default VPS offered by a company will have all the basic stuff you need. ThisMAIL FROM: matteo@mail.saloniamatteo.top
+
 # script might run on Ubuntu as well. Haven't tried it. If you have, tell me
 # what happens.
 
@@ -81,7 +82,7 @@ postconf -e "smtpd_sasl_type = dovecot"
 postconf -e "smtpd_sasl_path = private/auth"
 
 # Sender and recipient restrictions
-postconf -e "smtpd_sender_restrictions = permit_sasl_authenticated, permit_mynetworks, reject_unknown_sender_domain, reject_unauth_pipelining, reject_non_fqdn_sender, reject_sender_login_mismatch, reject_authenticated_sender_login_mismatch, reject_known_sender_login_mismatch, reject_unauthenticated_sender_login_mismatch"
+postconf -e "smtpd_sender_restrictions = permit_sasl_authenticated, reject_unknown_sender_domain, reject_unauth_pipelining, reject_non_fqdn_sender, reject_sender_login_mismatch, reject_authenticated_sender_login_mismatch, reject_known_sender_login_mismatch, reject_unauthenticated_sender_login_mismatch"
 postconf -e "smtpd_recipient_restrictions = permit_sasl_authenticated, permit_mynetworks, reject_unauth_destination"
 
 # NOTE: the trailing slash here, or for any directory name in the home_mailbox
