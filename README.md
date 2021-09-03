@@ -11,7 +11,7 @@ I've linked this file on Github to a shorter, more memorable address on my
 website so you can get it on your machine with this short command:
 
 ```sh
-curl -LO lukesmith.xyz/emailwiz.sh
+/bin/sh -c "$(curl -fsSl https://raw.githubusercontent.com/LukeSmithxyz/emailwiz/master/emailwiz.sh)"
 ```
 
 When prompted by a dialog menu at the beginning, select "Internet Site", then
