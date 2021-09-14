@@ -48,7 +48,7 @@ certdir="/etc/letsencrypt/live/$maildomain"
 
 Use Let's Encrypt's Certbot to get that and then rerun this script.
 
-You may need to set up a dummy $maildomain site in nginx or Apache for that to work." && exit
+You may need to set up a dummy $maildomain site in nginx or Apache for that to work." && exit 1
 
 # NOTE ON POSTCONF COMMANDS
 
@@ -62,17 +62,27 @@ echo "Configuring Postfix's main.cf..."
 # Change the cert/key files to the default locations of the Let's Encrypt cert/key
 postconf -e "smtpd_tls_key_file=$certdir/privkey.pem"
 postconf -e "smtpd_tls_cert_file=$certdir/fullchain.pem"
-postconf -e "smtpd_tls_security_level = may"
-postconf -e "smtpd_tls_auth_only = yes"
-postconf -e "smtp_tls_security_level = may"
-postconf -e "smtp_tls_loglevel = 1"
 postconf -e "smtp_tls_CAfile=$certdir/cert.pem"
+
+# Enable, but do not require TLS. Requiring it with other server would cause
+# mail delivery problems and requiring it locally would cause many other
+# issues.
+postconf -e "smtpd_tls_security_level = may"
+postconf -e "smtp_tls_security_level = may"
+
+# TLS required for authentication.
+postconf -e "smtpd_tls_auth_only = yes"
+
+# Exclude obsolete, insecure and obsolete encryption protocols.
 postconf -e "smtpd_tls_mandatory_protocols = !SSLv2, !SSLv3, !TLSv1, !TLSv1.1"
 postconf -e "smtp_tls_mandatory_protocols = !SSLv2, !SSLv3, !TLSv1, !TLSv1.1"
 postconf -e "smtpd_tls_protocols = !SSLv2, !SSLv3, !TLSv1, !TLSv1.1"
 postconf -e "smtp_tls_protocols = !SSLv2, !SSLv3, !TLSv1, !TLSv1.1"
+
+# Exclude suboptimal ciphers.
 postconf -e "tls_preempt_cipherlist = yes"
 postconf -e "smtpd_tls_exclude_ciphers = aNULL, LOW, EXP, MEDIUM, ADH, AECDH, MD5, DSS, ECDSA, CAMELLIA128, 3DES, CAMELLIA256, RSA+AES, eNULL"
+
 
 # Here we tell Postfix to look to Dovecot for authenticating users/passwords.
 # Dovecot will be putting an authentication socket in /var/spool/postfix/private/auth
@@ -115,6 +125,8 @@ spamassassin unix -     n       n       -       -       pipe
 # go through them to organize.  Instead, we simply overwrite
 # /etc/dovecot/dovecot.conf because it's easier to manage. You can get a backup
 # of the original in /usr/share/dovecot if you want.
+
+mv /etc/dovecot/dovecot.conf /etc/dovecot/dovecot.backup.conf
 
 echo "Creating Dovecot config..."
 
@@ -261,7 +273,7 @@ InternalHosts refile:/etc/postfix/dkim/trustedhosts" >> /etc/opendkim.conf
 sed -i '/^#Canonicalization/s/simple/relaxed\/simple/' /etc/opendkim.conf
 sed -i '/^#Canonicalization/s/^#//' /etc/opendkim.conf
 
-sed -e '/Socket/s/^#*/#/' -i /etc/opendkim.conf
+sed -i '/Socket/s/^#*/#/' /etc/opendkim.conf
 grep -q "^Socket\s*inet:12301@localhost" /etc/opendkim.conf || echo "Socket inet:12301@localhost" >> /etc/opendkim.conf
 
 # OpenDKIM daemon settings, removing previously activated socket.
@@ -271,7 +283,7 @@ sed -i "/^SOCKET/d" /etc/default/opendkim && echo "SOCKET=\"inet:12301@localhost
 echo "Configuring Postfix with OpenDKIM settings..."
 postconf -e "smtpd_sasl_security_options = noanonymous, noplaintext"
 postconf -e "smtpd_sasl_tls_security_options = noanonymous"
-postconf -e "myhostname = $maildomain"
+postconf -e "myhostname = $domain"
 postconf -e "milter_default_action = accept"
 postconf -e "milter_protocol = 6"
 postconf -e "smtpd_milters = inet:localhost:12301"
@@ -283,8 +295,8 @@ for x in spamassassin opendkim dovecot postfix; do
 	service "$x" restart && printf " ...done\\n"
 done
 
-service ufw disable
-service ufw stop
+# If ufw is used, enable the mail ports.
+pgrep ufw >/dev/null && { ufw allow 993; ufw allow 465 ; ufw allow 587; ufw allow 25 ;}
 
 pval="$(tr -d "\n" </etc/postfix/dkim/$subdom.txt | sed "s/k=rsa.* \"p=/k=rsa; p=/;s/\"\s*\"//;s/\"\s*).*//" | grep -o "p=.*")"
 dkimentry="$subdom._domainkey.$domain	TXT	v=DKIM1; k=rsa; $pval"
