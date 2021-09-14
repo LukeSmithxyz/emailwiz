@@ -290,6 +290,10 @@ postconf -e "smtpd_milters = inet:localhost:12301"
 postconf -e "non_smtpd_milters = inet:localhost:12301"
 postconf -e "mailbox_command = /usr/lib/dovecot/deliver"
 
+# A fix for "Opendkim won't start: can't open PID file?", as specified here: https://serverfault.com/a/847442
+/lib/opendkim/opendkim.service.generate
+systemctl daemon-reload
+
 for x in spamassassin opendkim dovecot postfix; do
 	printf "Restarting %s..." "$x"
 	service "$x" restart && printf " ...done\\n"

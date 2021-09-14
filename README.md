@@ -61,7 +61,7 @@ give your full domain without any subdomain, i.e. `lukesmith.xyz`.
 5. `apt purge` all your previous (failed) attempts to install and configure a
    mail server. Get rid of _all_ your system settings for Postfix, Dovecot,
    OpenDKIM and everything else. This script builds off of a fresh install.
-6. Some VPS providers block mail port numbers like 25, 933 or 587 by default.
+6. Some VPS providers block mail port numbers like 25, 993 or 587 by default.
    You may need to request these ports be opened to send mail successfully.
    Vultr and most other VPS providers will respond immediately and open the
    ports for you if you open a support ticket.
