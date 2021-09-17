@@ -74,10 +74,10 @@ postconf -e "smtp_tls_security_level = may"
 postconf -e "smtpd_tls_auth_only = yes"
 
 # Exclude obsolete, insecure and obsolete encryption protocols.
-postconf -e "smtpd_tls_mandatory_protocols = !SSLv2, !SSLv3, !TLSv1, !TLSv1.1"
-postconf -e "smtp_tls_mandatory_protocols = !SSLv2, !SSLv3, !TLSv1, !TLSv1.1"
-postconf -e "smtpd_tls_protocols = !SSLv2, !SSLv3, !TLSv1, !TLSv1.1"
-postconf -e "smtp_tls_protocols = !SSLv2, !SSLv3, !TLSv1, !TLSv1.1"
+postconf -e 'smtpd_tls_mandatory_protocols = !SSLv2, !SSLv3, !TLSv1, !TLSv1.1'
+postconf -e 'smtp_tls_mandatory_protocols = !SSLv2, !SSLv3, !TLSv1, !TLSv1.1'
+postconf -e 'smtpd_tls_protocols = !SSLv2, !SSLv3, !TLSv1, !TLSv1.1'
+postconf -e 'smtp_tls_protocols = !SSLv2, !SSLv3, !TLSv1, !TLSv1.1'
 
 # Exclude suboptimal ciphers.
 postconf -e "tls_preempt_cipherlist = yes"
@@ -102,7 +102,7 @@ postconf -e "home_mailbox = Mail/Inbox/"
 # master.cf
 echo "Configuring Postfix's master.cf..."
 
-sed -i "/^\s*-o/d;/^\s*submission/d;/^\s*smtp/d" /etc/postfix/master.cf
+sed -i '/^\s*-o/d;/^\s*submission/d;/^\s*smtp/d' /etc/postfix/master.cf
 
 echo "smtp unix - - n - - smtp
 smtp inet n - y - - smtpd
@@ -215,7 +215,7 @@ plugin {
 
 # If using an old version of Dovecot, remove the ssl_dl line.
 case "$(dovecot --version)" in
-	1|2.1*|2.2*) sed -i "/^ssl_dh/d" /etc/dovecot/dovecot.conf ;;
+	1|2.1*|2.2*) sed -i '/^ssl_dh/d' /etc/dovecot/dovecot.conf ;;
 esac
 
 mkdir /var/lib/dovecot/sieve/
@@ -274,10 +274,10 @@ sed -i '/^#Canonicalization/s/simple/relaxed\/simple/' /etc/opendkim.conf
 sed -i '/^#Canonicalization/s/^#//' /etc/opendkim.conf
 
 sed -i '/Socket/s/^#*/#/' /etc/opendkim.conf
-grep -q "^Socket\s*inet:12301@localhost" /etc/opendkim.conf || echo "Socket inet:12301@localhost" >> /etc/opendkim.conf
+grep -q '^Socket\s*inet:12301@localhost' /etc/opendkim.conf || echo "Socket inet:12301@localhost" >> /etc/opendkim.conf
 
 # OpenDKIM daemon settings, removing previously activated socket.
-sed -i "/^SOCKET/d" /etc/default/opendkim && echo "SOCKET=\"inet:12301@localhost\"" >> /etc/default/opendkim
+sed -i '/^SOCKET/d' /etc/default/opendkim && echo "SOCKET=\"inet:12301@localhost\"" >> /etc/default/opendkim
 
 # Here we add to postconf the needed settings for working with OpenDKIM
 echo "Configuring Postfix with OpenDKIM settings..."
@@ -302,7 +302,7 @@ done
 # If ufw is used, enable the mail ports.
 pgrep ufw >/dev/null && { ufw allow 993; ufw allow 465 ; ufw allow 587; ufw allow 25 ;}
 
-pval="$(tr -d "\n" </etc/postfix/dkim/$subdom.txt | sed "s/k=rsa.* \"p=/k=rsa; p=/;s/\"\s*\"//;s/\"\s*).*//" | grep -o "p=.*")"
+pval="$(tr -d '\n' </etc/postfix/dkim/$subdom.txt | sed 's/k=rsa.* \"p=/k=rsa; p=/;s/\"\s*\"//;s/\"\s*).*//' | grep -o "p=.*")"
 dkimentry="$subdom._domainkey.$domain	TXT	v=DKIM1; k=rsa; $pval"
 dmarcentry="_dmarc.$domain	TXT	v=DMARC1; p=reject; rua=mailto:dmarc@$domain; fo=1"
 spfentry="@	TXT	v=spf1 mx a:$maildomain -all"
