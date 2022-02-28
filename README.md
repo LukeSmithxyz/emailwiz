@@ -77,7 +77,7 @@ give your full domain without any subdomain, i.e. `lukesmith.xyz`.
 Let's say we want to add a user Billy and let him receive mail, run this:
 
 ```
-useradd -m -G mail billy
+useradd -m -G mail -s /bin/bash billy
 passwd billy
 ```
 
@@ -85,7 +85,7 @@ Any user added to the `mail` group will be able to receive mail. Suppose a user
 Cassie already exists and we want to let her receive mail too. Just run:
 
 ```
-usermod -a -G mail cassie
+usermod -a -G mail -s /bin/bash cassie
 ```
 
 A user's mail will appear in `~/Mail/`. If you want to see your mail while ssh'd
