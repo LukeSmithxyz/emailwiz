@@ -220,11 +220,11 @@ esac
 
 mkdir /var/lib/dovecot/sieve/
 
-echo 'require [\"fileinto\", \"mailbox\"];
+echo "require [\"fileinto\", \"mailbox\"];
 if header :contains \"X-Spam-Flag\" \"YES\"
 	{
 		fileinto \"Junk\";
-	}' > /var/lib/dovecot/sieve/default.sieve
+	}" > /var/lib/dovecot/sieve/default.sieve
 
 grep -q '^vmail:' /etc/passwd || useradd vmail
 chown -R vmail:vmail /var/lib/dovecot
@@ -277,7 +277,7 @@ sed -i '/Socket/s/^#*/#/' /etc/opendkim.conf
 grep -q '^Socket\s*inet:12301@localhost' /etc/opendkim.conf || echo 'Socket inet:12301@localhost' >> /etc/opendkim.conf
 
 # OpenDKIM daemon settings, removing previously activated socket.
-sed -i '/^SOCKET/d' /etc/default/opendkim && echo 'SOCKET=\"inet:12301@localhost\"' >> /etc/default/opendkim
+sed -i '/^SOCKET/d' /etc/default/opendkim && echo "SOCKET=\"inet:12301@localhost\"" >> /etc/default/opendkim
 
 # Here we add to postconf the needed settings for working with OpenDKIM
 echo 'Configuring Postfix with OpenDKIM settings...'
