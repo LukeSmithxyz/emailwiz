@@ -37,7 +37,7 @@ echo "Setting umask to 0022..."
 umask 0022
 
 echo "Installing programs..."
-apt install postfix dovecot-imapd dovecot-sieve opendkim spamassassin spamc
+apt install postfix postfix-pcre dovecot-imapd dovecot-sieve opendkim spamassassin spamc
 # Check if OpenDKIM is installed and install it if not.
 which opendkim-genkey >/dev/null 2>&1 || apt install opendkim-tools
 domain="$(cat /etc/mailname)"
@@ -273,8 +273,7 @@ echo "*@$domain $subdom._domainkey.$domain" >> /etc/postfix/dkim/signingtable
 
 grep -q '127.0.0.1' /etc/postfix/dkim/trustedhosts 2>/dev/null ||
 	echo '127.0.0.1
-10.1.0.0/16
-1.2.3.4/24' >> /etc/postfix/dkim/trustedhosts
+10.1.0.0/16' >> /etc/postfix/dkim/trustedhosts
 
 # ...and source it from opendkim.conf
 grep -q '^KeyTable' /etc/opendkim.conf 2>/dev/null || echo 'KeyTable file:/etc/postfix/dkim/keytable
