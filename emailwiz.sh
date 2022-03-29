@@ -33,6 +33,9 @@
 # On installation of Postfix, select "Internet Site" and put in TLD (without
 # `mail.` before it).
 
+echo "Setting umask to 0022..."
+umask 0022
+
 echo "Installing programs..."
 apt install postfix dovecot-imapd dovecot-sieve opendkim spamassassin spamc
 # Check if OpenDKIM is installed and install it if not.
