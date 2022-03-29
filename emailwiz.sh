@@ -67,42 +67,42 @@ postconf -e "smtp_tls_CAfile=$certdir/cert.pem"
 # Enable, but do not require TLS. Requiring it with other server would cause
 # mail delivery problems and requiring it locally would cause many other
 # issues.
-postconf -e "smtpd_tls_security_level = may"
-postconf -e "smtp_tls_security_level = may"
+postconf -e 'smtpd_tls_security_level = may'
+postconf -e 'smtp_tls_security_level = may'
 
 # TLS required for authentication.
-postconf -e "smtpd_tls_auth_only = yes"
+postconf -e 'smtpd_tls_auth_only = yes'
 
 # Exclude obsolete, insecure and obsolete encryption protocols.
-postconf -e "smtpd_tls_mandatory_protocols = !SSLv2, !SSLv3, !TLSv1, !TLSv1.1"
-postconf -e "smtp_tls_mandatory_protocols = !SSLv2, !SSLv3, !TLSv1, !TLSv1.1"
-postconf -e "smtpd_tls_protocols = !SSLv2, !SSLv3, !TLSv1, !TLSv1.1"
-postconf -e "smtp_tls_protocols = !SSLv2, !SSLv3, !TLSv1, !TLSv1.1"
+postconf -e 'smtpd_tls_mandatory_protocols = !SSLv2, !SSLv3, !TLSv1, !TLSv1.1'
+postconf -e 'smtp_tls_mandatory_protocols = !SSLv2, !SSLv3, !TLSv1, !TLSv1.1'
+postconf -e 'smtpd_tls_protocols = !SSLv2, !SSLv3, !TLSv1, !TLSv1.1'
+postconf -e 'smtp_tls_protocols = !SSLv2, !SSLv3, !TLSv1, !TLSv1.1'
 
 # Exclude suboptimal ciphers.
-postconf -e "tls_preempt_cipherlist = yes"
-postconf -e "smtpd_tls_exclude_ciphers = aNULL, LOW, EXP, MEDIUM, ADH, AECDH, MD5, DSS, ECDSA, CAMELLIA128, 3DES, CAMELLIA256, RSA+AES, eNULL"
+postconf -e 'tls_preempt_cipherlist = yes'
+postconf -e 'smtpd_tls_exclude_ciphers = aNULL, LOW, EXP, MEDIUM, ADH, AECDH, MD5, DSS, ECDSA, CAMELLIA128, 3DES, CAMELLIA256, RSA+AES, eNULL'
 
 
 # Here we tell Postfix to look to Dovecot for authenticating users/passwords.
 # Dovecot will be putting an authentication socket in /var/spool/postfix/private/auth
-postconf -e "smtpd_sasl_auth_enable = yes"
-postconf -e "smtpd_sasl_type = dovecot"
-postconf -e "smtpd_sasl_path = private/auth"
+postconf -e 'smtpd_sasl_auth_enable = yes'
+postconf -e 'smtpd_sasl_type = dovecot'
+postconf -e 'smtpd_sasl_path = private/auth'
 
 # Sender and recipient restrictions
-postconf -e "smtpd_recipient_restrictions = permit_sasl_authenticated, permit_mynetworks, reject_unauth_destination"
+postconf -e 'smtpd_recipient_restrictions = permit_sasl_authenticated, permit_mynetworks, reject_unauth_destination'
 
 # NOTE: the trailing slash here, or for any directory name in the home_mailbox
 # command, is necessary as it distinguishes a maildir (which is the actual
 # directories that what we want) from a spoolfile (which is what old unix
 # boomers want and no one else).
-postconf -e "home_mailbox = Mail/Inbox/"
+postconf -e 'home_mailbox = Mail/Inbox/'
 
 # master.cf
 echo "Configuring Postfix's master.cf..."
 
-sed -i "/^\s*-o/d;/^\s*submission/d;/^\s*smtp/d" /etc/postfix/master.cf
+sed -i '/^\s*-o/d;/^\s*submission/d;/^\s*smtp/d' /etc/postfix/master.cf
 
 echo "smtp unix - - n - - smtp
 smtp inet n - y - - smtpd
@@ -142,7 +142,7 @@ ssl = required
 ssl_cert = <$certdir/fullchain.pem
 ssl_key = <$certdir/privkey.pem
 ssl_min_protocol = TLSv1.2
-ssl_cipher_list = EECDH+ECDSA+AESGCM:EECDH+aRSA+AESGCM:EECDH+ECDSA+SHA256:EECDH+aRSA+SHA256:EECDH+ECDSA+SHA384:EECDH+ECDSA+SHA256:EECDH+aRSA+SHA384:EDH+aRSA+AESGCM:EDH+aRSA+SHA256:EDH+aRSA:EECDH:!aNULL:!eNULL:!MEDIUM:!LOW:!3DES:!MD5:!EXP:!PSK:!SRP:!DSS:!RC4:!SEED
+ssl_cipher_list = "'EECDH+ECDSA+AESGCM:EECDH+aRSA+AESGCM:EECDH+ECDSA+SHA256:EECDH+aRSA+SHA256:EECDH+ECDSA+SHA384:EECDH+ECDSA+SHA256:EECDH+aRSA+SHA384:EDH+aRSA+AESGCM:EDH+aRSA+SHA256:EDH+aRSA:EECDH:!aNULL:!eNULL:!MEDIUM:!LOW:!3DES:!MD5:!EXP:!PSK:!SRP:!DSS:!RC4:!SEED'"
 ssl_prefer_server_ciphers = yes
 ssl_dh = </usr/share/dovecot/dh.pem
 # Plaintext login. This is safe and easy thanks to SSL.
@@ -215,7 +215,7 @@ plugin {
 
 # If using an old version of Dovecot, remove the ssl_dl line.
 case "$(dovecot --version)" in
-	1|2.1*|2.2*) sed -i "/^ssl_dh/d" /etc/dovecot/dovecot.conf ;;
+	1|2.1*|2.2*) sed -i '/^ssl_dh/d' /etc/dovecot/dovecot.conf ;;
 esac
 
 mkdir /var/lib/dovecot/sieve/
@@ -226,14 +226,14 @@ if header :contains \"X-Spam-Flag\" \"YES\"
 		fileinto \"Junk\";
 	}" > /var/lib/dovecot/sieve/default.sieve
 
-grep -q "^vmail:" /etc/passwd || useradd vmail
+grep -q '^vmail:' /etc/passwd || useradd vmail
 chown -R vmail:vmail /var/lib/dovecot
 sievec /var/lib/dovecot/sieve/default.sieve
 
-echo "Preparing user authentication..."
+echo 'Preparing user authentication...'
 grep -q nullok /etc/pam.d/dovecot ||
-echo "auth    required        pam_unix.so nullok
-account required        pam_unix.so" >> /etc/pam.d/dovecot
+echo 'auth    required        pam_unix.so nullok
+account required        pam_unix.so' >> /etc/pam.d/dovecot
 
 # OpenDKIM
 
@@ -246,49 +246,49 @@ account required        pam_unix.so" >> /etc/pam.d/dovecot
 # without a problem.
 
 # Create an OpenDKIM key in the proper place with proper permissions.
-echo "Generating OpenDKIM keys..."
+echo 'Generating OpenDKIM keys...'
 mkdir -p /etc/postfix/dkim
 opendkim-genkey -D /etc/postfix/dkim/ -d "$domain" -s "$subdom"
 chgrp opendkim /etc/postfix/dkim/*
 chmod g+r /etc/postfix/dkim/*
 
 # Generate the OpenDKIM info:
-echo "Configuring OpenDKIM..."
+echo 'Configuring OpenDKIM...'
 grep -q "$domain" /etc/postfix/dkim/keytable 2>/dev/null ||
 echo "$subdom._domainkey.$domain $domain:$subdom:/etc/postfix/dkim/$subdom.private" >> /etc/postfix/dkim/keytable
 
 grep -q "$domain" /etc/postfix/dkim/signingtable 2>/dev/null ||
 echo "*@$domain $subdom._domainkey.$domain" >> /etc/postfix/dkim/signingtable
 
-grep -q "127.0.0.1" /etc/postfix/dkim/trustedhosts 2>/dev/null ||
-	echo "127.0.0.1
+grep -q '127.0.0.1' /etc/postfix/dkim/trustedhosts 2>/dev/null ||
+	echo '127.0.0.1
 10.1.0.0/16
-1.2.3.4/24" >> /etc/postfix/dkim/trustedhosts
+1.2.3.4/24' >> /etc/postfix/dkim/trustedhosts
 
 # ...and source it from opendkim.conf
-grep -q "^KeyTable" /etc/opendkim.conf 2>/dev/null || echo "KeyTable file:/etc/postfix/dkim/keytable
+grep -q '^KeyTable' /etc/opendkim.conf 2>/dev/null || echo 'KeyTable file:/etc/postfix/dkim/keytable
 SigningTable refile:/etc/postfix/dkim/signingtable
-InternalHosts refile:/etc/postfix/dkim/trustedhosts" >> /etc/opendkim.conf
+InternalHosts refile:/etc/postfix/dkim/trustedhosts' >> /etc/opendkim.conf
 
 sed -i '/^#Canonicalization/s/simple/relaxed\/simple/' /etc/opendkim.conf
 sed -i '/^#Canonicalization/s/^#//' /etc/opendkim.conf
 
 sed -i '/Socket/s/^#*/#/' /etc/opendkim.conf
-grep -q "^Socket\s*inet:12301@localhost" /etc/opendkim.conf || echo "Socket inet:12301@localhost" >> /etc/opendkim.conf
+grep -q '^Socket\s*inet:12301@localhost' /etc/opendkim.conf || echo 'Socket inet:12301@localhost' >> /etc/opendkim.conf
 
 # OpenDKIM daemon settings, removing previously activated socket.
-sed -i "/^SOCKET/d" /etc/default/opendkim && echo "SOCKET=\"inet:12301@localhost\"" >> /etc/default/opendkim
+sed -i '/^SOCKET/d' /etc/default/opendkim && echo "SOCKET=\"inet:12301@localhost\"" >> /etc/default/opendkim
 
 # Here we add to postconf the needed settings for working with OpenDKIM
-echo "Configuring Postfix with OpenDKIM settings..."
-postconf -e "smtpd_sasl_security_options = noanonymous, noplaintext"
-postconf -e "smtpd_sasl_tls_security_options = noanonymous"
+echo 'Configuring Postfix with OpenDKIM settings...'
+postconf -e 'smtpd_sasl_security_options = noanonymous, noplaintext'
+postconf -e 'smtpd_sasl_tls_security_options = noanonymous'
 postconf -e "myhostname = $domain"
-postconf -e "milter_default_action = accept"
-postconf -e "milter_protocol = 6"
-postconf -e "smtpd_milters = inet:localhost:12301"
-postconf -e "non_smtpd_milters = inet:localhost:12301"
-postconf -e "mailbox_command = /usr/lib/dovecot/deliver"
+postconf -e 'milter_default_action = accept'
+postconf -e 'milter_protocol = 6'
+postconf -e 'smtpd_milters = inet:localhost:12301'
+postconf -e 'non_smtpd_milters = inet:localhost:12301'
+postconf -e 'mailbox_command = /usr/lib/dovecot/deliver'
 
 # A fix for "Opendkim won't start: can't open PID file?", as specified here: https://serverfault.com/a/847442
 /lib/opendkim/opendkim.service.generate
@@ -302,7 +302,7 @@ done
 # If ufw is used, enable the mail ports.
 pgrep ufw >/dev/null && { ufw allow 993; ufw allow 465 ; ufw allow 587; ufw allow 25 ;}
 
-pval="$(tr -d "\n" </etc/postfix/dkim/$subdom.txt | sed "s/k=rsa.* \"p=/k=rsa; p=/;s/\"\s*\"//;s/\"\s*).*//" | grep -o "p=.*")"
+pval="$(tr -d '\n' </etc/postfix/dkim/"$subdom".txt | sed 's/k=rsa.* \"p=/k=rsa; p=/;s/\"\s*\"//;s/\"\s*).*//' | grep -o 'p=.*')"
 dkimentry="$subdom._domainkey.$domain	TXT	v=DKIM1; k=rsa; $pval"
 dmarcentry="_dmarc.$domain	TXT	v=DMARC1; p=reject; rua=mailto:dmarc@$domain; fo=1"
 spfentry="@	TXT	v=spf1 mx a:$maildomain -all"
