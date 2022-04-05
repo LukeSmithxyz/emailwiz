@@ -98,10 +98,17 @@ to log in remotely though:
 Let's say you want to access your mail with Thunderbird or mutt or another
 email program. For my domain, the server information will be as follows:
 
+### SMTP
 - SMTP server: `mail.lukesmith.xyz`
 - SMTP port: 587
+- Authentication Method: Normal password
+- Connection Security: STARTTLS
+
+### IMAP
 - IMAP server: `mail.lukesmith.xyz`
-- IMAP port: 993
+- IMAP port: 143
+- Authentication Method: Normal password
+- Connection Security: STARTTLS
 
 In previous versions of emailwiz, you also had to log on with *only* your
 username (i.e. `luke`) rather than your whole email address (i.e.
