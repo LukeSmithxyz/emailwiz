@@ -45,13 +45,13 @@ subdom=${MAIL_SUBDOM:-mail}
 maildomain="$subdom.$domain"
 certdir="/etc/letsencrypt/live/$maildomain"
 
-[ ! -d "$certdir" ] && certdir="$(dirname "$(certbot certificates 2>/dev/null | grep "$maildomain\|*.$domain" -A 2 | awk '/Certificate Path/ {print $3}' | head -n1)")"
+[ ! -d "$certdir" ] &&
+	possiblecert="$(certbot certificates 2>/dev/null | grep "$maildomain\|*\.$domain" -A 2 | awk '/Certificate Path/ {print $3}' | head -n1)" &&
+	certdir="${possiblecert%/*}"
 
 [ ! -d "$certdir" ] && echo "Note! You must first have a Let's Encrypt Certbot HTTPS/SSL Certificate for $maildomain.
 
-Use Let's Encrypt's Certbot to get that and then rerun this script.
-
-You may need to set up a dummy $maildomain site in nginx or Apache for that to work." && exit 1
+Use Let's Encrypt's Certbot to get that and then rerun this script." && exit 1
 
 # NOTE ON POSTCONF COMMANDS
 
