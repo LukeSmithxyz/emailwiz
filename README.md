@@ -34,10 +34,10 @@ give your full domain without any subdomain, i.e. `lukesmith.xyz`.
   have an offline mirror of my email setup and I recommend the same. There are
   other ways of doing it though, like Thunderbird, etc.
 
-## Requirements
+## Before you run this script you need...
 
 1. A **Debian or Ubuntu server**. I've tested this on a
-   [Vultr](https://www.vultr.com/?ref=8384069-6G) Debian server and one running
+   [Vultr](https://www.vultr.com/?ref=8940911-8H) Debian server and one running
    Ubuntu and their setup works, but I suspect other VPS hosts will have
    similar/possibly identical default settings which will let you run this on
    them. Note that the affiliate link there to Vultr gives you a $100 credit
@@ -65,6 +65,9 @@ give your full domain without any subdomain, i.e. `lukesmith.xyz`.
    You may need to request these ports be opened to send mail successfully.
    Vultr and most other VPS providers will respond immediately and open the
    ports for you if you open a support ticket.
+7. If you have a firewall, you'll need to open ports on your side as well. For
+   example, with `ufw`, just run: `ufw allow 587` on ports 587, 993 and 25 (you
+   will need port 80 for Certbot too).
 
 ## Post-install requirement!
 
