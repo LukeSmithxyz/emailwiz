@@ -138,3 +138,8 @@ support me at [lukesmith.xyz/donate](https://lukesmith.xyz/donate.html).
   [Vultr](https://www.vultr.com/docs/what-ports-are-blocked) for instance
   blocks this by default, you need to open a support ticket with them to open
   it. You can't send mail if 25 is blocked
+
+## TODO
+
+- Fail2ban for security.
+- Scripts for easier spam prevention.
