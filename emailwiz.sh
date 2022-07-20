@@ -309,8 +309,7 @@ for x in spamassassin opendkim dovecot postfix; do
 	service "$x" restart && printf " ...done\\n"
 done
 
-# Start the SpamAssassin process, and ensure SpamAssassin starts on boot.
-/etc/init.d/spamassassin start
+# Ensure SpamAssassin starts on boot.
 systemctl enable spamassassin.service
 
 # If ufw is used, enable the mail ports.
