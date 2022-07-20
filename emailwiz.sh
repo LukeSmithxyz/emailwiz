@@ -307,6 +307,7 @@ systemctl daemon-reload
 for x in spamassassin opendkim dovecot postfix; do
 	printf "Restarting %s..." "$x"
 	service "$x" restart && printf " ...done\\n"
+	systemctl enable "$x"
 done
 
 # If ufw is used, enable the mail ports.
