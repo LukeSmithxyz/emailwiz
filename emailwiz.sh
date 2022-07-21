@@ -320,9 +320,9 @@ spfentry="$domain	TXT	v=spf1 mx a:$maildomain -all"
 
 useradd -m -G mail dmarc
 
-grep -q "^deploy-hook = postfix reload" /etc/letsencrypt/cli.ini ||
+grep -q '^deploy-hook = echo "$RENEWED_DOMAINS" | grep -q' /etc/letsencrypt/cli.ini ||
 	echo "
-deploy-hook = service postfix reload && service dovecot reload" >> /etc/letsencrypt/cli.ini
+deploy-hook = echo \"\$RENEWED_DOMAINS\" | grep -q '$maildomain' && service postfix reload && service dovecot reload" >> /etc/letsencrypt/cli.ini
 
 echo "$dkimentry
 $dmarcentry
