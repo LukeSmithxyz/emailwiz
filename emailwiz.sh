@@ -322,7 +322,7 @@ useradd -m -G mail dmarc
 
 grep -q '^deploy-hook = echo "$RENEWED_DOMAINS" | grep -q' /etc/letsencrypt/cli.ini ||
 	echo "
-deploy-hook = echo "\$RENEWED_DOMAINS" | grep -q \"$maildomain\" && service postfix reload && service dovecot reload" >> /etc/letsencrypt/cli.ini
+deploy-hook = echo "\$RENEWED_DOMAINS" | grep -q \"$maildomain\"" && service postfix reload && service dovecot reload" >> /etc/letsencrypt/cli.ini
 
 echo "$dkimentry
 $dmarcentry
