@@ -37,9 +37,9 @@ echo "Setting umask to 0022..."
 umask 0022
 
 echo "Installing programs..."
-apt install postfix postfix-pcre dovecot-imapd dovecot-sieve opendkim spamassassin spamc
+apt-get install postfix postfix-pcre dovecot-imapd dovecot-sieve opendkim spamassassin spamc
 # Check if OpenDKIM is installed and install it if not.
-which opendkim-genkey >/dev/null 2>&1 || apt install opendkim-tools
+which opendkim-genkey >/dev/null 2>&1 || apt-get install opendkim-tools
 domain="$(cat /etc/mailname)"
 subdom=${MAIL_SUBDOM:-mail}
 maildomain="$subdom.$domain"
