@@ -299,6 +299,10 @@ postconf -e 'milter_protocol = 6'
 postconf -e 'smtpd_milters = inet:localhost:12301'
 postconf -e 'non_smtpd_milters = inet:localhost:12301'
 postconf -e 'mailbox_command = /usr/lib/dovecot/deliver'
+postconf -e 'smtpd_helo_required = yes'
+postconf -e 'smtpd_helo_restrictions = permit_mynetworks, permit_sasl_authenticated, reject_invalid_helo_hostname, reject_non_fqdn_helo_hostname, reject_unknown_helo_hostname'
+postconf -e 'smtpd_sender_restrictions = permit_sasl_authenticated, permit_mynetworks, reject_sender_login_mismatch, reject_unknown_reverse_client_hostname, reject_unknown_sender_domain'
+
 
 # A fix for "Opendkim won't start: can't open PID file?", as specified here: https://serverfault.com/a/847442
 /lib/opendkim/opendkim.service.generate
