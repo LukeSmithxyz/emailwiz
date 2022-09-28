@@ -258,10 +258,10 @@ account required        pam_unix.so' >> /etc/pam.d/dovecot
 
 # Create an OpenDKIM key in the proper place with proper permissions.
 echo 'Generating OpenDKIM keys...'
-mkdir -p /etc/postfix/dkim
-opendkim-genkey -D /etc/postfix/dkim/ -d "$domain" -s "$subdom"
-chgrp opendkim /etc/postfix/dkim/*
-chmod g+r /etc/postfix/dkim/*
+mkdir -p "/etc/postfix/dkim/$domain"
+opendkim-genkey -D "/etc/postfix/dkim/$domain" -d "$domain" -s "$subdom"
+chgrp -R opendkim /etc/postfix/dkim/*
+chmod -R g+r /etc/postfix/dkim/*
 
 # Generate the OpenDKIM info:
 echo 'Configuring OpenDKIM...'
@@ -316,7 +316,7 @@ done
 # If ufw is used, enable the mail ports.
 pgrep ufw >/dev/null && { ufw allow 993; ufw allow 465 ; ufw allow 587; ufw allow 25 ;}
 
-pval="$(tr -d '\n' </etc/postfix/dkim/"$subdom".txt | sed 's/k=rsa.* \"p=/k=rsa; p=/;s/\"\s*\"//;s/\"\s*).*//' | grep -o 'p=.*')"
+pval="$(tr -d '\n' <"/etc/postfix/dkim/$domain/$subdom.txt" | sed 's/k=rsa.* \"p=/k=rsa; p=/;s/\"\s*\"//;s/\"\s*).*//' | grep -o 'p=.*')"
 dkimentry="$subdom._domainkey.$domain	TXT	v=DKIM1; k=rsa; $pval"
 dmarcentry="_dmarc.$domain	TXT	v=DMARC1; p=reject; rua=mailto:dmarc@$domain; fo=1"
 spfentry="$domain	TXT	v=spf1 mx a:$maildomain -all"
