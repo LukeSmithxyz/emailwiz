@@ -37,21 +37,21 @@ echo "Setting umask to 0022..."
 umask 0022
 
 echo "Installing programs..."
-apt install postfix postfix-pcre dovecot-imapd dovecot-sieve opendkim spamassassin spamc
+apt-get install postfix postfix-pcre dovecot-imapd dovecot-sieve opendkim spamassassin spamc
 # Check if OpenDKIM is installed and install it if not.
-which opendkim-genkey >/dev/null 2>&1 || apt install opendkim-tools
+which opendkim-genkey >/dev/null 2>&1 || apt-get install opendkim-tools
 domain="$(cat /etc/mailname)"
 subdom=${MAIL_SUBDOM:-mail}
 maildomain="$subdom.$domain"
 certdir="/etc/letsencrypt/live/$maildomain"
 
-[ ! -d "$certdir" ] && certdir="$(dirname "$(certbot certificates 2>/dev/null | grep "$maildomain\|*.$domain" -A 2 | awk '/Certificate Path/ {print $3}' | head -n1)")"
+[ ! -d "$certdir" ] &&
+	possiblecert="$(certbot certificates 2>/dev/null | grep "$maildomain\|*\.$domain" -A 2 | awk '/Certificate Path/ {print $3}' | head -n1)" &&
+	certdir="${possiblecert%/*}"
 
 [ ! -d "$certdir" ] && echo "Note! You must first have a Let's Encrypt Certbot HTTPS/SSL Certificate for $maildomain.
 
-Use Let's Encrypt's Certbot to get that and then rerun this script.
-
-You may need to set up a dummy $maildomain site in nginx or Apache for that to work." && exit 1
+Use Let's Encrypt's Certbot to get that and then rerun this script." && exit 1
 
 # NOTE ON POSTCONF COMMANDS
 
@@ -311,17 +311,22 @@ systemctl daemon-reload
 for x in spamassassin opendkim dovecot postfix; do
 	printf "Restarting %s..." "$x"
 	service "$x" restart && printf " ...done\\n"
+	systemctl enable "$x"
 done
 
 # If ufw is used, enable the mail ports.
 pgrep ufw >/dev/null && { ufw allow 993; ufw allow 465 ; ufw allow 587; ufw allow 25 ;}
 
-pval="$(tr -d '\n' <"/etc/postfix/dkim/$domain/$subdom.txt" | sed 's/k=rsa.* \"p=/k=rsa; p=/;s/\"\s*\"//;s/\"\s*).*//' | grep -o 'p=.*')"
+pval="$(tr -d '\n' <"/etc/postfix/dkim/$domain/$subdom.txt" | sed "s/k=rsa.* \"p=/k=rsa; p=/;s/\"\s*\"//;s/\"\s*).*//" | grep -o 'p=.*')"
 dkimentry="$subdom._domainkey.$domain	TXT	v=DKIM1; k=rsa; $pval"
 dmarcentry="_dmarc.$domain	TXT	v=DMARC1; p=reject; rua=mailto:dmarc@$domain; fo=1"
 spfentry="$domain	TXT	v=spf1 mx a:$maildomain -all"
 
 useradd -m -G mail dmarc
+
+grep -q '^deploy-hook = echo "$RENEWED_DOMAINS" | grep -q' /etc/letsencrypt/cli.ini ||
+	echo "
+deploy-hook = echo \"\$RENEWED_DOMAINS\" | grep -q '$maildomain' && service postfix reload && service dovecot reload" >> /etc/letsencrypt/cli.ini
 
 echo "$dkimentry
 $dmarcentry
