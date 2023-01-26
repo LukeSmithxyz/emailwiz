@@ -94,6 +94,8 @@ postconf -e 'smtpd_sasl_type = dovecot'
 postconf -e 'smtpd_sasl_path = private/auth'
 
 # Sender and recipient restrictions
+postconf -e "smtpd_sender_login_maps = pcre:/etc/postfix/login_maps.pcre"
+postconf -e "smtpd_sender_restrictions = permit_sasl_authenticated, permit_mynetworks, reject_sender_login_mismatch"
 postconf -e 'smtpd_recipient_restrictions = permit_sasl_authenticated, permit_mynetworks, reject_unauth_destination, reject_unknown_recipient_domain'
 
 # NOTE: the trailing slash here, or for any directory name in the home_mailbox
@@ -105,6 +107,10 @@ postconf -e 'home_mailbox = Mail/Inbox/'
 # A fix referenced in issue #178 - Postfix configuration leaks ip addresses (https://github.com/LukeSmithxyz/emailwiz/issues/178)
 # Prevent "Received From:" header in sent emails in order to prevent leakage of public ip addresses
 postconf -e "header_checks = regexp:/etc/postfix/header_checks"
+
+# Create a login map file that ensures that if a sender wants to send a mail from a user at our local
+# domain, they must be authenticated as that user
+echo "/^(.*)@$(sh -c "echo $domain | sed 's/\./\\\./'")$/   \${1}" > /etc/postfix/login_maps.pcre
 
 # strips "Received From:" in sent emails
 echo "/^Received:.*/     IGNORE
