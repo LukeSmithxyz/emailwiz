@@ -96,7 +96,7 @@ postconf -e 'smtpd_sasl_path = private/auth'
 # Sender and recipient restrictions
 postconf -e "smtpd_sender_login_maps = pcre:/etc/postfix/login_maps.pcre"
 postconf -e "smtpd_sender_restrictions = permit_sasl_authenticated, permit_mynetworks, reject_sender_login_mismatch"
-postconf -e 'smtpd_recipient_restrictions = permit_sasl_authenticated, permit_mynetworks, reject_unauth_destination'
+postconf -e 'smtpd_recipient_restrictions = permit_sasl_authenticated, permit_mynetworks, reject_unauth_destination, reject_unknown_recipient_domain'
 
 # NOTE: the trailing slash here, or for any directory name in the home_mailbox
 # command, is necessary as it distinguishes a maildir (which is the actual
@@ -264,15 +264,15 @@ account required        pam_unix.so' >> /etc/pam.d/dovecot
 
 # Create an OpenDKIM key in the proper place with proper permissions.
 echo 'Generating OpenDKIM keys...'
-mkdir -p /etc/postfix/dkim
-opendkim-genkey -D /etc/postfix/dkim/ -d "$domain" -s "$subdom"
-chgrp opendkim /etc/postfix/dkim/*
-chmod g+r /etc/postfix/dkim/*
+mkdir -p "/etc/postfix/dkim/$domain"
+opendkim-genkey -D "/etc/postfix/dkim/$domain" -d "$domain" -s "$subdom"
+chgrp -R opendkim /etc/postfix/dkim/*
+chmod -R g+r /etc/postfix/dkim/*
 
 # Generate the OpenDKIM info:
 echo 'Configuring OpenDKIM...'
 grep -q "$domain" /etc/postfix/dkim/keytable 2>/dev/null ||
-echo "$subdom._domainkey.$domain $domain:$subdom:/etc/postfix/dkim/$subdom.private" >> /etc/postfix/dkim/keytable
+echo "$subdom._domainkey.$domain $domain:$subdom:/etc/postfix/dkim/$domain/$subdom.private" >> /etc/postfix/dkim/keytable
 
 grep -q "$domain" /etc/postfix/dkim/signingtable 2>/dev/null ||
 echo "*@$domain $subdom._domainkey.$domain" >> /etc/postfix/dkim/signingtable
@@ -305,6 +305,10 @@ postconf -e 'milter_protocol = 6'
 postconf -e 'smtpd_milters = inet:localhost:12301'
 postconf -e 'non_smtpd_milters = inet:localhost:12301'
 postconf -e 'mailbox_command = /usr/lib/dovecot/deliver'
+postconf -e 'smtpd_helo_required = yes'
+postconf -e 'smtpd_helo_restrictions = permit_mynetworks, permit_sasl_authenticated, reject_invalid_helo_hostname, reject_non_fqdn_helo_hostname, reject_unknown_helo_hostname'
+postconf -e 'smtpd_sender_restrictions = permit_sasl_authenticated, permit_mynetworks, reject_sender_login_mismatch, reject_unknown_reverse_client_hostname, reject_unknown_sender_domain'
+
 
 # A fix for "Opendkim won't start: can't open PID file?", as specified here: https://serverfault.com/a/847442
 /lib/opendkim/opendkim.service.generate
@@ -319,7 +323,7 @@ done
 # If ufw is used, enable the mail ports.
 pgrep ufw >/dev/null && { ufw allow 993; ufw allow 465 ; ufw allow 587; ufw allow 25 ;}
 
-pval="$(tr -d '\n' </etc/postfix/dkim/"$subdom".txt | sed "s/k=rsa.* \"p=/k=rsa; p=/;s/\"\s*\"//;s/\"\s*).*//" | grep -o 'p=.*')"
+pval="$(tr -d '\n' <"/etc/postfix/dkim/$domain/$subdom.txt" | sed "s/k=rsa.* \"p=/k=rsa; p=/;s/\"\s*\"//;s/\"\s*).*//" | grep -o 'p=.*')"
 dkimentry="$subdom._domainkey.$domain	TXT	v=DKIM1; k=rsa; $pval"
 dmarcentry="_dmarc.$domain	TXT	v=DMARC1; p=reject; rua=mailto:dmarc@$domain; fo=1"
 spfentry="$domain	TXT	v=spf1 mx a:$maildomain -all"
