@@ -33,11 +33,9 @@
 # On installation of Postfix, select "Internet Site" and put in TLD (without
 # `mail.` before it).
 
-echo "Setting umask to 0022..."
 umask 0022
 
-echo "Installing programs..."
-apt-get install postfix postfix-pcre dovecot-imapd dovecot-sieve opendkim spamassassin spamc
+apt-get install -y postfix postfix-pcre dovecot-imapd dovecot-sieve opendkim spamassassin spamc net-tools
 # Check if OpenDKIM is installed and install it if not.
 which opendkim-genkey >/dev/null 2>&1 || apt-get install opendkim-tools
 domain="$(cat /etc/mailname)"
@@ -86,7 +84,6 @@ postconf -e 'smtp_tls_protocols = !SSLv2, !SSLv3, !TLSv1, !TLSv1.1'
 postconf -e 'tls_preempt_cipherlist = yes'
 postconf -e 'smtpd_tls_exclude_ciphers = aNULL, LOW, EXP, MEDIUM, ADH, AECDH, MD5, DSS, ECDSA, CAMELLIA128, 3DES, CAMELLIA256, RSA+AES, eNULL'
 
-
 # Here we tell Postfix to look to Dovecot for authenticating users/passwords.
 # Dovecot will be putting an authentication socket in /var/spool/postfix/private/auth
 postconf -e 'smtpd_sasl_auth_enable = yes'
@@ -104,17 +101,16 @@ postconf -e 'smtpd_relay_restrictions = permit_sasl_authenticated, reject_unauth
 # boomers want and no one else).
 postconf -e 'home_mailbox = Mail/Inbox/'
 
-# A fix referenced in issue #178 - Postfix configuration leaks ip addresses (https://github.com/LukeSmithxyz/emailwiz/issues/178)
 # Prevent "Received From:" header in sent emails in order to prevent leakage of public ip addresses
 postconf -e "header_checks = regexp:/etc/postfix/header_checks"
-
-# Create a login map file that ensures that if a sender wants to send a mail from a user at our local
-# domain, they must be authenticated as that user
-echo "/^(.*)@$(sh -c "echo $domain | sed 's/\./\\\./'")$/   \${1}" > /etc/postfix/login_maps.pcre
 
 # strips "Received From:" in sent emails
 echo "/^Received:.*/     IGNORE
 /^X-Originating-IP:/    IGNORE" >> /etc/postfix/header_checks
+
+# Create a login map file that ensures that if a sender wants to send a mail from a user at our local
+# domain, they must be authenticated as that user
+echo "/^(.*)@$(sh -c "echo $domain | sed 's/\./\\\./'")$/   \${1}" > /etc/postfix/login_maps.pcre
 
 # master.cf
 echo "Configuring Postfix's master.cf..."
@@ -136,13 +132,11 @@ smtps     inet  n       -       y       -       -       smtpd
 spamassassin unix -     n       n       -       -       pipe
   user=debian-spamd argv=/usr/bin/spamc -f -e /usr/sbin/sendmail -oi -f \${sender} \${recipient}" >> /etc/postfix/master.cf
 
-
 # By default, dovecot has a bunch of configs in /etc/dovecot/conf.d/ These
 # files have nice documentation if you want to read it, but it's a huge pain to
 # go through them to organize.  Instead, we simply overwrite
 # /etc/dovecot/dovecot.conf because it's easier to manage. You can get a backup
 # of the original in /usr/share/dovecot if you want.
-
 mv /etc/dovecot/dovecot.conf /etc/dovecot/dovecot.backup.conf
 
 echo "Creating Dovecot config..."

@@ -48,16 +48,15 @@ give your full domain without any subdomain, i.e. `lukesmith.xyz`.
    **CNAME record** for your `mail.` subdomain.
 4. **A Reverse DNS entry for your site.** Go to your VPS settings and add an
    entry for your IPv4 Reverse DNS that goes from your IP address to
-   `<yourdomain.com>` (not mail subdomain). If you would like IPv6, you can do
-   the same for that. This has been tested on Vultr, and all decent VPS hosts
-   will have a section on their instance settings page to add a reverse DNS PTR
-   entry.
-   You can use the 'Test Email Server' or ':smtp' tool on
-   [mxtoolbox](https://mxtoolbox.com/SuperTool.aspx) to test if you set up
-   a reverse DNS correctly. This step is not required for everyone, but some
-   big email services like Gmail will stop emails coming from mail servers
-   with no/invalid rDNS lookups. This means your email will fail to even
-   make it to the recipients spam folder; it will never make it to them.
+   `<mail.yourdomain.com>`. If you would like IPv6, you can do the same for
+   that. This has been tested on Vultr, and all decent VPS hosts will have a
+   section on their instance settings page to add a reverse DNS PTR entry. You
+   can use the 'Test Email Server' or ':smtp' tool on
+   [mxtoolbox](https://mxtoolbox.com/SuperTool.aspx) to test if you set up a
+   reverse DNS correctly. This step is not required for everyone, but some big
+   email services like Gmail will stop emails coming from mail servers with
+   no/invalid rDNS lookups. This means your email will fail to even make it to
+   the recipients spam folder; it will never make it to them.
 5. `apt purge` all your previous (failed) attempts to install and configure a
    mail server. Get rid of _all_ your system settings for Postfix, Dovecot,
    OpenDKIM and everything else. This script builds off of a fresh install.
