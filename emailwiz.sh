@@ -52,7 +52,9 @@ done
 	possiblecert="$(certbot certificates 2>/dev/null | grep "Domains:\.* $maildomain\(\s\|$\)" -A 2 | awk '/Certificate Path/ {print $3}' | head -n1)" &&
 	certdir="${possiblecert%/*}"
 
-[ ! -d "$certdir" ] && case "$(netstat -tulpn | grep ":80\s")" in
+[ ! -d "$certdir" ] &&
+	certdir="/etc/letsencrypt/live/$maildomain" &&
+	case "$(netstat -tulpn | grep ":80\s")" in
 	*nginx*)
 		apt install -y python3-certbot-nginx
 		certbot -d "$maildomain" certonly --nginx --register-unsafely-without-email --agree-tos
