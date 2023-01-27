@@ -43,20 +43,33 @@ subdom=${MAIL_SUBDOM:-mail}
 maildomain="$subdom.$domain"
 certdir="/etc/letsencrypt/live/$maildomain"
 
+# Open required mail ports, and 80, for Certbot.
+for port in 80 993 465 25 587; do
+	ufw allow "$port" 2>/dev/null
+done
+
 [ ! -d "$certdir" ] &&
-	possiblecert="$(certbot certificates 2>/dev/null | grep "$maildomain\|*\.$domain" -A 2 | awk '/Certificate Path/ {print $3}' | head -n1)" &&
+	possiblecert="$(certbot certificates 2>/dev/null | grep "Domains:\.* $maildomain\(\s\|$\)" -A 2 | awk '/Certificate Path/ {print $3}' | head -n1)" &&
 	certdir="${possiblecert%/*}"
+
+[ ! -d "$certdir" ] && case "$(netstat -tulpn | grep ":80\s")" in
+	*nginx*)
+		apt install -y python3-certbot-nginx
+		certbot -d "$maildomain" certonly --nginx --register-unsafely-without-email --agree-tos
+		;;
+	*apache*)
+		apt install -y python3-certbot-apache
+		certbot -d "$maildomain" certonly --apache --register-unsafely-without-email --agree-tos
+		;;
+	*)
+		apt install -y python3-certbot
+		certbot -d "$maildomain" certonly --standalone --register-unsafely-without-email --agree-tos
+		;;
+esac
 
 [ ! -d "$certdir" ] && echo "Note! You must first have a Let's Encrypt Certbot HTTPS/SSL Certificate for $maildomain.
 
-Use Let's Encrypt's Certbot to get that and then rerun this script." && exit 1
-
-# NOTE ON POSTCONF COMMANDS
-
-# The `postconf` command literally just adds the line in question to
-# /etc/postfix/main.cf so if you need to debug something, go there. It replaces
-# any other line that sets the same setting, otherwise it is appended to the
-# end of the file.
+Use Let's Encrypt's Certbot to get that and then rerun this script. It failed to run automatically here." && exit 1
 
 echo "Configuring Postfix's main.cf..."
 
@@ -313,9 +326,6 @@ for x in spamassassin opendkim dovecot postfix; do
 	service "$x" restart && printf " ...done\\n"
 	systemctl enable "$x"
 done
-
-# If ufw is used, enable the mail ports.
-pgrep ufw >/dev/null && { ufw allow 993; ufw allow 465 ; ufw allow 587; ufw allow 25 ;}
 
 pval="$(tr -d '\n' <"/etc/postfix/dkim/$domain/$subdom.txt" | sed "s/k=rsa.* \"p=/k=rsa; p=/;s/\"\s*\"//;s/\"\s*).*//" | grep -o 'p=.*')"
 dkimentry="$subdom._domainkey.$domain	TXT	v=DKIM1; k=rsa; $pval"
