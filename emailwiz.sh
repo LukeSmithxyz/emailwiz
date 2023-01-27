@@ -65,11 +65,7 @@ done
 		apt install -y python3-certbot
 		certbot -d "$maildomain" certonly --standalone --register-unsafely-without-email --agree-tos
 		;;
-esac
-
-[ ! -d "$certdir" ] && echo "Note! You must first have a Let's Encrypt Certbot HTTPS/SSL Certificate for $maildomain.
-
-Use Let's Encrypt's Certbot to get that and then rerun this script. It failed to run automatically here." && exit 1
+esac || exit $1
 
 echo "Configuring Postfix's main.cf..."
 
