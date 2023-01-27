@@ -49,7 +49,7 @@ for port in 80 993 465 25 587; do
 done
 
 [ ! -d "$certdir" ] &&
-	possiblecert="$(certbot certificates 2>/dev/null | grep "Domains:\.* $maildomain\(\s\|$\)" -A 2 | awk '/Certificate Path/ {print $3}' | head -n1)" &&
+	possiblecert="$(certbot certificates 2>/dev/null | grep "Domains:\.* \(\*\.$domain\|$maildomain\)\(\s\|$\)" -A 2 | awk '/Certificate Path/ {print $3}' | head -n1)" &&
 	certdir="${possiblecert%/*}"
 
 [ ! -d "$certdir" ] &&
