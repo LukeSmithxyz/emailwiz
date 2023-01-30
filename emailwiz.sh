@@ -114,6 +114,7 @@ postconf -e 'home_mailbox = Mail/Inbox/'
 
 # Prevent "Received From:" header in sent emails in order to prevent leakage of public ip addresses
 postconf -e "header_checks = regexp:/etc/postfix/header_checks"
+sudo postconf -e "smtp_connect_timeout = 3000"
 
 # strips "Received From:" in sent emails
 echo "/^Received:.*/     IGNORE
