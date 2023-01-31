@@ -12,26 +12,20 @@
 # email with their passnames on the server. No usage of a redundant mySQL
 # database to do this.
 
-# DEPENDENCIES BEFORE RUNNING
+# BEFORE INSTALLING
 
-# 1. Have a Debian system with a static IP and all that. Pretty much any
-# default VPS offered by a company will have all the basic stuff you need. This
-# script might run on Ubuntu as well. Haven't tried it. If you have, tell me
-# what happens.
-
-# 2. Have a Let's Encrypt SSL certificate for $maildomain. You might need one
-# for $domain as well, but they're free with Let's Encypt so you should have
-# them anyway.
-
-# 3. If you've been toying around with your server settings trying to get
-# postfix/dovecot/etc. working before running this, I recommend you `apt purge`
-# everything first because this script is build on top of only the defaults.
-# Clear out /etc/postfix and /etc/dovecot yourself if needbe.
+# Have a Debian or Ubuntu server with a static IP and DNS records (usually
+# A/AAAA) that point your domain name to it.
 
 # NOTE WHILE INSTALLING
 
 # On installation of Postfix, select "Internet Site" and put in TLD (without
 # `mail.` before it).
+
+# AFTER INSTALLING
+
+# More DNS records will be given to you to install. One of them will be
+# different for every installation and is uniquely generated on your machine.
 
 umask 0022
 
@@ -67,7 +61,9 @@ done
 		apt install -y python3-certbot
 		certbot -d "$maildomain" certonly --standalone --register-unsafely-without-email --agree-tos
 		;;
-esac || exit $1
+esac
+
+[ ! -d "$certdir" ] && echo "Error locating or installing SSL certificate." && exit 1
 
 echo "Configuring Postfix's main.cf..."
 
@@ -159,7 +155,6 @@ echo "# Dovecot config
 # %d for the domain
 # %h the user's home directory
 
-# If you're not a brainlet, SSL must be set to required.
 ssl = required
 ssl_cert = <$certdir/fullchain.pem
 ssl_key = <$certdir/privkey.pem
@@ -167,7 +162,6 @@ ssl_min_protocol = TLSv1.2
 ssl_cipher_list = "'EECDH+ECDSA+AESGCM:EECDH+aRSA+AESGCM:EECDH+ECDSA+SHA256:EECDH+aRSA+SHA256:EECDH+ECDSA+SHA384:EECDH+ECDSA+SHA256:EECDH+aRSA+SHA384:EDH+aRSA+AESGCM:EDH+aRSA+SHA256:EDH+aRSA:EECDH:!aNULL:!eNULL:!MEDIUM:!LOW:!3DES:!MD5:!EXP:!PSK:!SRP:!DSS:!RC4:!SEED'"
 ssl_prefer_server_ciphers = yes
 ssl_dh = </usr/share/dovecot/dh.pem
-# Plaintext login. This is safe and easy thanks to SSL.
 auth_mechanisms = plain login
 auth_username_format = %n
 
@@ -209,7 +203,6 @@ namespace inbox {
 }
 
 # Here we let Postfix use Dovecot's authetication system.
-
 service auth {
   unix_listener /var/spool/postfix/private/auth {
 	mode = 0660
@@ -313,7 +306,6 @@ postconf -e 'mailbox_command = /usr/lib/dovecot/deliver'
 postconf -e 'smtpd_helo_required = yes'
 postconf -e 'smtpd_helo_restrictions = permit_mynetworks, permit_sasl_authenticated, reject_invalid_helo_hostname, reject_non_fqdn_helo_hostname, reject_unknown_helo_hostname'
 postconf -e 'smtpd_sender_restrictions = permit_sasl_authenticated, permit_mynetworks, reject_sender_login_mismatch, reject_unknown_reverse_client_hostname, reject_unknown_sender_domain'
-
 
 # A fix for "Opendkim won't start: can't open PID file?", as specified here: https://serverfault.com/a/847442
 /lib/opendkim/opendkim.service.generate
