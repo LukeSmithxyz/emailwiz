@@ -25,6 +25,8 @@ give your full domain without any subdomain, i.e. `lukesmith.xyz`.
 - **Spamassassin** to prevent spam and allow you to make custom filters.
 - **OpenDKIM** to validate you so you can send to Gmail and other big sites.
 - The required SSL certificates if not already present.
+- **fail2ban** to increase server security, with enabled modules for the above
+  programs.
 
 ## This script does _not_
 

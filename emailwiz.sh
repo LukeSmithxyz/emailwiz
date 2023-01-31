@@ -29,7 +29,7 @@
 
 umask 0022
 
-apt-get install -y postfix postfix-pcre dovecot-imapd dovecot-sieve opendkim spamassassin spamc net-tools
+apt-get install -y postfix postfix-pcre dovecot-imapd dovecot-sieve opendkim spamassassin spamc net-tools fail2ban
 # Check if OpenDKIM is installed and install it if not.
 which opendkim-genkey >/dev/null 2>&1 || apt-get install opendkim-tools
 domain="$(cat /etc/mailname)"
@@ -311,7 +311,17 @@ postconf -e 'smtpd_sender_restrictions = permit_sasl_authenticated, permit_mynet
 /lib/opendkim/opendkim.service.generate
 systemctl daemon-reload
 
-for x in spamassassin opendkim dovecot postfix; do
+# Enable fail2ban security for dovecot and postfix.
+[ ! -f /etc/fail2ban/jail.d/emailwiz.local ] && echo "[postfix]
+enabled = true
+[postfix-sasl]
+enabled = true
+[sieve]
+enabled = true
+[dovecot]
+enabled = true" > /etc/fail2ban/jail.d/emailwiz.local
+
+for x in spamassassin opendkim dovecot postfix fail2ban; do
 	printf "Restarting %s..." "$x"
 	service "$x" restart && printf " ...done\\n"
 	systemctl enable "$x"
