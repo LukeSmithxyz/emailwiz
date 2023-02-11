@@ -331,6 +331,7 @@ pval="$(tr -d '\n' <"/etc/postfix/dkim/$domain/$subdom.txt" | sed "s/k=rsa.* \"p
 dkimentry="$subdom._domainkey.$domain	TXT	v=DKIM1; k=rsa; $pval"
 dmarcentry="_dmarc.$domain	TXT	v=DMARC1; p=reject; rua=mailto:dmarc@$domain; fo=1"
 spfentry="$domain	TXT	v=spf1 mx a:$maildomain -all"
+mxentry="$domain	MX	10	$maildomain	300"
 
 useradd -m -G mail dmarc
 
@@ -338,9 +339,11 @@ grep -q '^deploy-hook = echo "$RENEWED_DOMAINS" | grep -q' /etc/letsencrypt/cli.
 	echo "
 deploy-hook = echo \"\$RENEWED_DOMAINS\" | grep -q '$maildomain' && service postfix reload && service dovecot reload" >> /etc/letsencrypt/cli.ini
 
-echo "$dkimentry
+echo "NOTE: Elements in the entries might appear in a different order in your registrar's DNS settings.
+$dkimentry
 $dmarcentry
-$spfentry" > "$HOME/dns_emailwizard"
+$spfentry
+$mxentry" > "$HOME/dns_emailwizard"
 
 printf "\033[31m
  _   _
@@ -357,6 +360,8 @@ $dkimentry
 $dmarcentry
 
 $spfentry
+
+$mxentry
 \033[0m
 NOTE: You may need to omit the \`.$domain\` portion at the beginning if
 inputting them in a registrar's web interface.

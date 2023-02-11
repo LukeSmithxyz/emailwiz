@@ -45,7 +45,9 @@ give your full domain without any subdomain, i.e. `lukesmith.xyz`.
 1. Debian or Ubuntu server. I suited this script for
    [Vultr](https://www.vultr.com/?ref=8940911-8H) servers originally, but it
    works consistently on any normal setup.
-2. DNS records that point your domain to your server's IP (IPv4 and IPv6).
+2. DNS records that point at least your domain's `mail.` subdomain to your
+   server's IP (IPv4 and IPv6). This is required on initial run for certbot to
+   get an SSL certificate for your `mail.` subdomain.
 
 ## Mandatory Finishing Touches
 
