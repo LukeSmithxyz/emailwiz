@@ -1,11 +1,7 @@
 # Email server setup script
 
-I wrote this script during the grueling process of installing and setting up
-an email server. It perfectly reproduces my successful steps to ensure the
-same setup time and time again, now with many improvements.
-
-I'm glad to say that dozens, hundreds of people have now used it and there is a
-sizeable network of people with email servers thanks to this script.
+This script installs an email server with all the features required in the
+modern web.
 
 I've linked this file on Github to a shorter, more memorable address on my
 website so you can get it on your machine with this short command:
@@ -15,20 +11,23 @@ curl -LO lukesmith.xyz/emailwiz.sh
 ```
 
 When prompted by a dialog menu at the beginning, select "Internet Site", then
-give your full domain without any subdomain, i.e. `lukesmith.xyz`.
+give your full domain without any subdomain, e.g. `lukesmith.xyz`.
+
+I'm glad to say that dozens, hundreds of people have now used it and there is a
+sizeable network of people with email servers thanks to this script.
 
 ## This script installs
 
 - **Postfix** to send and receive mail.
 - **Dovecot** to get mail to your email client (mutt, Thunderbird, etc.).
-- Config files that link the two above securely with native log-ins.
+- Config files that link the two above securely with native PAM log-ins.
 - **Spamassassin** to prevent spam and allow you to make custom filters.
 - **OpenDKIM** to validate you so you can send to Gmail and other big sites.
-- The required SSL certificates if not already present.
+- **Certbot** SSL certificates, if not already present.
 - **fail2ban** to increase server security, with enabled modules for the above
   programs.
 
-## This script does _not_
+## This script does _not_...
 
 - use a SQL database or anything like that. We keep it simple and use normal
   Unix system users for accounts and passwords.
@@ -44,7 +43,7 @@ give your full domain without any subdomain, i.e. `lukesmith.xyz`.
 
 1. Debian or Ubuntu server. I suited this script for
    [Vultr](https://www.vultr.com/?ref=8940911-8H) servers originally, but it
-   works consistently on any normal setup.
+   seems to work on most other default setups on different VPS providers.
 2. DNS records that point at least your domain's `mail.` subdomain to your
    server's IP (IPv4 and IPv6). This is required on initial run for certbot to
    get an SSL certificate for your `mail.` subdomain.
