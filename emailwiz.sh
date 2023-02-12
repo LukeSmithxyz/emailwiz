@@ -1,17 +1,5 @@
 #!/bin/sh
 
-# THE SETUP
-
-# Mail will be stored in non-retarded Maildirs because it's $currentyear.  This
-# makes it easier for use with isync, which is what I care about so I can have
-# an offline repo of mail.
-
-# The mailbox names are: Inbox, Sent, Drafts, Archive, Junk, Trash
-
-# Use the typical unix login system for mail users. Users will log into their
-# email with their passnames on the server. No usage of a redundant mySQL
-# database to do this.
-
 # BEFORE INSTALLING
 
 # Have a Debian or Ubuntu server with a static IP and DNS records (usually
@@ -29,9 +17,7 @@
 
 umask 0022
 
-apt-get install -y postfix postfix-pcre dovecot-imapd dovecot-sieve opendkim spamassassin spamc net-tools fail2ban
-# Check if OpenDKIM is installed and install it if not.
-which opendkim-genkey >/dev/null 2>&1 || apt-get install opendkim-tools
+apt-get install -y postfix postfix-pcre dovecot-imapd dovecot-sieve opendkim opendkim-tools spamassassin spamc net-tools fail2ban
 domain="$(cat /etc/mailname)"
 subdom=${MAIL_SUBDOM:-mail}
 maildomain="$subdom.$domain"
@@ -97,10 +83,13 @@ postconf -e 'smtpd_sasl_auth_enable = yes'
 postconf -e 'smtpd_sasl_type = dovecot'
 postconf -e 'smtpd_sasl_path = private/auth'
 
-# Sender, relay and recipient restrictions
+# helo, sender, relay and recipient restrictions
 postconf -e "smtpd_sender_login_maps = pcre:/etc/postfix/login_maps.pcre"
+postconf -e 'smtpd_sender_restrictions = permit_sasl_authenticated, permit_mynetworks, reject_sender_login_mismatch, reject_unknown_reverse_client_hostname, reject_unknown_sender_domain'
 postconf -e 'smtpd_recipient_restrictions = permit_sasl_authenticated, permit_mynetworks, reject_unauth_destination, reject_unknown_recipient_domain'
 postconf -e 'smtpd_relay_restrictions = permit_sasl_authenticated, reject_unauth_destination'
+postconf -e 'smtpd_helo_required = yes'
+postconf -e 'smtpd_helo_restrictions = permit_mynetworks, permit_sasl_authenticated, reject_invalid_helo_hostname, reject_non_fqdn_helo_hostname, reject_unknown_helo_hostname'
 
 # NOTE: the trailing slash here, or for any directory name in the home_mailbox
 # command, is necessary as it distinguishes a maildir (which is the actual
@@ -303,9 +292,6 @@ postconf -e 'milter_protocol = 6'
 postconf -e 'smtpd_milters = inet:localhost:12301'
 postconf -e 'non_smtpd_milters = inet:localhost:12301'
 postconf -e 'mailbox_command = /usr/lib/dovecot/deliver'
-postconf -e 'smtpd_helo_required = yes'
-postconf -e 'smtpd_helo_restrictions = permit_mynetworks, permit_sasl_authenticated, reject_invalid_helo_hostname, reject_non_fqdn_helo_hostname, reject_unknown_helo_hostname'
-postconf -e 'smtpd_sender_restrictions = permit_sasl_authenticated, permit_mynetworks, reject_sender_login_mismatch, reject_unknown_reverse_client_hostname, reject_unknown_sender_domain'
 
 # A fix for "Opendkim won't start: can't open PID file?", as specified here: https://serverfault.com/a/847442
 /lib/opendkim/opendkim.service.generate
@@ -334,6 +320,14 @@ spfentry="$domain	TXT	v=spf1 mx a:$maildomain -all"
 mxentry="$domain	MX	10	$maildomain	300"
 
 useradd -m -G mail dmarc
+
+# Create a cronjob that deletes month-old dmarc feedback:
+cat <<EOF > /etc/cron.weekly/dmarc-clean
+#!/bin/sh
+
+find /home/dmarc/Mail -type f -mtime +30 -name '*.mail*' -delete
+EOF
+chmod 755 /etc/cron.weekly/dmarc-clean
 
 grep -q '^deploy-hook = echo "$RENEWED_DOMAINS" | grep -q' /etc/letsencrypt/cli.ini ||
 	echo "
