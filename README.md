@@ -129,7 +129,7 @@ this script or documentation has saved you some frustration, donate here:
 
 ## Sites for Troubleshooting
 
-Can send or receive mail? Getting marked as spam? There are tools to double-check your DNS records and more:
+Can't send or receive mail? Getting marked as spam? There are tools to double-check your DNS records and more:
 
 - Always check `journalctl -xe` first for specific errors.
 - [Check your DNS](https://intodns.com/)
