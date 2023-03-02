@@ -307,6 +307,9 @@ enabled = true
 [dovecot]
 enabled = true" > /etc/fail2ban/jail.d/emailwiz.local
 
+# Enable SpamAssassin update cronjob.
+sed -i "s|^CRON=0|CRON=1|" /etc/default/spamassassin
+
 for x in spamassassin opendkim dovecot postfix fail2ban; do
 	printf "Restarting %s..." "$x"
 	service "$x" restart && printf " ...done\\n"
