@@ -328,7 +328,8 @@ useradd -m -G mail dmarc
 cat <<EOF > /etc/cron.weekly/dmarc-clean
 #!/bin/sh
 
-find /home/dmarc/Mail -type f -mtime +30 -name '*.mail*' -delete
+find /home/dmarc/Mail -type f -mtime +30 -name '*.mail*' -delete >/dev/null 2>&1
+exit 0
 EOF
 chmod 755 /etc/cron.weekly/dmarc-clean
 
