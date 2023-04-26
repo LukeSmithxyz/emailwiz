@@ -125,7 +125,7 @@ smtp inet n - y - - smtpd
 submission inet n       -       y       -       -       smtpd
   -o syslog_name=postfix/submission
   -o smtpd_tls_security_level=encrypt
-  -o smtpd_sasl_auth_enable=yes
+  -o smtpd_tls_auth_only=yes
   -o smtpd_enforce_tls=yes
   -o smtpd_sasl_type=dovecot
   -o smtpd_sasl_path=private/auth
