@@ -53,6 +53,12 @@ esac
 
 echo "Configuring Postfix's main.cf..."
 
+# Adding additional vars to fix an issue with receiving emails (relay access denied) and adding it to mydestination.
+postconf -e "myhostname = $maildomain"
+postconf -e "mail_name = $domain"  #This is for the smtpd_banner
+postconf -e "mydomain = $domain"
+postconf -e "mydestination = $myhostname, $mydomain, mail, localhost.localdomain, localhost, localhost.$mydomain"
+
 # Change the cert/key files to the default locations of the Let's Encrypt cert/key
 postconf -e "smtpd_tls_key_file=$certdir/privkey.pem"
 postconf -e "smtpd_tls_cert_file=$certdir/fullchain.pem"
@@ -119,8 +125,12 @@ smtp inet n - y - - smtpd
 submission inet n       -       y       -       -       smtpd
   -o syslog_name=postfix/submission
   -o smtpd_tls_security_level=encrypt
-  -o smtpd_sasl_auth_enable=yes
   -o smtpd_tls_auth_only=yes
+  -o smtpd_enforce_tls=yes
+  -o smtpd_client_restrictions=permit_sasl_authenticated,reject
+  -o smtpd_sender_restrictions=reject_sender_login_mismatch
+  -o smtpd_sender_login_maps=hash:/etc/postfix/virtual
+  -o smtpd_recipient_restrictions=permit_sasl_authenticated,reject_unauth_destination
 smtps     inet  n       -       y       -       -       smtpd
   -o syslog_name=postfix/smtps
   -o smtpd_tls_wrappermode=yes
