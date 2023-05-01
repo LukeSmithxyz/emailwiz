@@ -57,7 +57,7 @@ echo "Configuring Postfix's main.cf..."
 postconf -e "myhostname = $maildomain"
 postconf -e "mail_name = $domain"  #This is for the smtpd_banner
 postconf -e "mydomain = $domain"
-postconf -e "mydestination = $myhostname, $mydomain, mail, localhost.localdomain, localhost, localhost.$mydomain"
+postconf -e 'mydestination = $myhostname, $mydomain, mail, localhost.localdomain, localhost, localhost.$mydomain'
 
 # Change the cert/key files to the default locations of the Let's Encrypt cert/key
 postconf -e "smtpd_tls_key_file=$certdir/privkey.pem"
