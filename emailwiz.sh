@@ -129,7 +129,7 @@ submission inet n       -       y       -       -       smtpd
   -o smtpd_enforce_tls=yes
   -o smtpd_client_restrictions=permit_sasl_authenticated,reject
   -o smtpd_sender_restrictions=reject_sender_login_mismatch
-  -o smtpd_sender_login_maps=hash:/etc/postfix/virtual
+  -o smtpd_sender_login_maps=pcre:/etc/postfix/login_maps.pcre
   -o smtpd_recipient_restrictions=permit_sasl_authenticated,reject_unauth_destination
 smtps     inet  n       -       y       -       -       smtpd
   -o syslog_name=postfix/smtps
