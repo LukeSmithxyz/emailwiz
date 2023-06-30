@@ -73,7 +73,7 @@ postconf -e 'smtp_tls_security_level = may'
 # TLS required for authentication.
 postconf -e 'smtpd_tls_auth_only = yes'
 
-# Exclude obsolete, insecure and obsolete encryption protocols.
+# Exclude insecure and obsolete encryption protocols.
 postconf -e 'smtpd_tls_mandatory_protocols = !SSLv2, !SSLv3, !TLSv1, !TLSv1.1'
 postconf -e 'smtp_tls_mandatory_protocols = !SSLv2, !SSLv3, !TLSv1, !TLSv1.1'
 postconf -e 'smtpd_tls_protocols = !SSLv2, !SSLv3, !TLSv1, !TLSv1.1'
