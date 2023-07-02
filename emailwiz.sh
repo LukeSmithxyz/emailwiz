@@ -318,9 +318,23 @@ enabled = true
 enabled = true" > /etc/fail2ban/jail.d/emailwiz.local
 
 # Enable SpamAssassin update cronjob.
-sed -i "s|^CRON=0|CRON=1|" /etc/default/spamassassin
+if [ -f /etc/default/spamassassin ]
+then
+	sed -i "s|^CRON=0|CRON=1|" /etc/default/spamassassin
+	printf "Restarting spamassassin..."
+	service spamassassin restart && printf " ...done\\n"
+	systemctl enable spamassassin
+elif [ -f /etc/default/spamd ]
+then
+	sed -i "s|^CRON=0|CRON=1|" /etc/default/spamd
+	printf "Restarting spamd..."
+	service spamd restart && printf " ...done\\n"
+	systemctl enable spamd
+else
+	printf "!!! Neither /etc/default/spamassassin or /etc/default/spamd exists, this is unexpected and needs to be investigated"
+fi
 
-for x in spamassassin opendkim dovecot postfix fail2ban; do
+for x in opendkim dovecot postfix fail2ban; do
 	printf "Restarting %s..." "$x"
 	service "$x" restart && printf " ...done\\n"
 	systemctl enable "$x"
