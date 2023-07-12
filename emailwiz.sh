@@ -17,7 +17,7 @@
 
 umask 0022
 
-apt-get install -y postfix postfix-pcre dovecot-imapd dovecot-sieve opendkim opendkim-tools spamassassin spamc net-tools fail2ban
+apt-get install -y postfix postfix-pcre dovecot-imapd dovecot-pop3d dovecot-sieve opendkim opendkim-tools spamassassin spamc net-tools fail2ban
 domain="$(cat /etc/mailname)"
 subdom=${MAIL_SUBDOM:-mail}
 maildomain="$subdom.$domain"
@@ -164,7 +164,7 @@ ssl_dh = </usr/share/dovecot/dh.pem
 auth_mechanisms = plain login
 auth_username_format = %n
 
-protocols = \$protocols imap
+protocols = \$protocols imap pop3
 
 # Search for valid users in /etc/passwd
 userdb {
@@ -216,6 +216,11 @@ protocol lda {
 
 protocol lmtp {
   mail_plugins = \$mail_plugins sieve
+}
+
+protocol pop3 {
+  pop3_uidl_format = %08Xu%08Xv
+  pop3_no_flag_updates = yes
 }
 
 plugin {
