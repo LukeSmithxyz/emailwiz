@@ -317,6 +317,8 @@ enabled = true
 [dovecot]
 enabled = true" > /etc/fail2ban/jail.d/emailwiz.local
 
+sed -i "s|^backend = auto$|backend = systemd|" /etc/fail2ban/jail.conf
+
 # Enable SpamAssassin update cronjob.
 sed -i "s|^CRON=0|CRON=1|" /etc/default/spamassassin
 
