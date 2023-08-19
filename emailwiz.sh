@@ -17,7 +17,7 @@
 
 umask 0022
 
-apt-get install -y postfix postfix-pcre dovecot-imapd dovecot-sieve opendkim opendkim-tools spamassassin spamc net-tools fail2ban
+apt-get install -y postfix postfix-pcre dovecot-imapd dovecot-pop3d dovecot-sieve opendkim opendkim-tools spamassassin spamc net-tools fail2ban
 domain="$(cat /etc/mailname)"
 subdom=${MAIL_SUBDOM:-mail}
 maildomain="$subdom.$domain"
@@ -73,7 +73,7 @@ postconf -e 'smtp_tls_security_level = may'
 # TLS required for authentication.
 postconf -e 'smtpd_tls_auth_only = yes'
 
-# Exclude obsolete, insecure and obsolete encryption protocols.
+# Exclude insecure and obsolete encryption protocols.
 postconf -e 'smtpd_tls_mandatory_protocols = !SSLv2, !SSLv3, !TLSv1, !TLSv1.1'
 postconf -e 'smtp_tls_mandatory_protocols = !SSLv2, !SSLv3, !TLSv1, !TLSv1.1'
 postconf -e 'smtpd_tls_protocols = !SSLv2, !SSLv3, !TLSv1, !TLSv1.1'
@@ -164,7 +164,7 @@ ssl_dh = </usr/share/dovecot/dh.pem
 auth_mechanisms = plain login
 auth_username_format = %n
 
-protocols = \$protocols imap
+protocols = \$protocols imap pop3
 
 # Search for valid users in /etc/passwd
 userdb {
@@ -216,6 +216,11 @@ protocol lda {
 
 protocol lmtp {
   mail_plugins = \$mail_plugins sieve
+}
+
+protocol pop3 {
+  pop3_uidl_format = %08Xu%08Xv
+  pop3_no_flag_updates = yes
 }
 
 plugin {
@@ -320,9 +325,23 @@ enabled = true" > /etc/fail2ban/jail.d/emailwiz.local
 sed -i "s|^backend = auto$|backend = systemd|" /etc/fail2ban/jail.conf
 
 # Enable SpamAssassin update cronjob.
-sed -i "s|^CRON=0|CRON=1|" /etc/default/spamassassin
+if [ -f /etc/default/spamassassin ]
+then
+	sed -i "s|^CRON=0|CRON=1|" /etc/default/spamassassin
+	printf "Restarting spamassassin..."
+	service spamassassin restart && printf " ...done\\n"
+	systemctl enable spamassassin
+elif [ -f /etc/default/spamd ]
+then
+	sed -i "s|^CRON=0|CRON=1|" /etc/default/spamd
+	printf "Restarting spamd..."
+	service spamd restart && printf " ...done\\n"
+	systemctl enable spamd
+else
+	printf "!!! Neither /etc/default/spamassassin or /etc/default/spamd exists, this is unexpected and needs to be investigated"
+fi
 
-for x in spamassassin opendkim dovecot postfix fail2ban; do
+for x in opendkim dovecot postfix fail2ban; do
 	printf "Restarting %s..." "$x"
 	service "$x" restart && printf " ...done\\n"
 	systemctl enable "$x"
