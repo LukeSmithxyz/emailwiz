@@ -64,7 +64,7 @@ postconf -e "smtpd_tls_key_file=$certdir/privkey.pem"
 postconf -e "smtpd_tls_cert_file=$certdir/fullchain.pem"
 postconf -e "smtp_tls_CAfile=$certdir/cert.pem"
 
-# Enable, but do not require TLS. Requiring it with other server would cause
+# Enable, but do not require TLS. Requiring it with other servers would cause
 # mail delivery problems and requiring it locally would cause many other
 # issues.
 postconf -e 'smtpd_tls_security_level = may'
@@ -99,8 +99,8 @@ postconf -e 'smtpd_helo_restrictions = permit_mynetworks, permit_sasl_authentica
 
 # NOTE: the trailing slash here, or for any directory name in the home_mailbox
 # command, is necessary as it distinguishes a maildir (which is the actual
-# directories that what we want) from a spoolfile (which is what old unix
-# boomers want and no one else).
+# directory that we want) from a spoolfile (which is what old unix boomers want
+# and no one else).
 postconf -e 'home_mailbox = Mail/Inbox/'
 
 # Prevent "Received From:" header in sent emails in order to prevent leakage of public ip addresses
@@ -201,7 +201,7 @@ namespace inbox {
 }
 }
 
-# Here we let Postfix use Dovecot's authetication system.
+# Here we let Postfix use Dovecot's authentication system.
 service auth {
   unix_listener /var/spool/postfix/private/auth {
 	mode = 0660
