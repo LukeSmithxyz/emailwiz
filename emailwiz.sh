@@ -24,7 +24,7 @@ maildomain="$subdom.$domain"
 certdir="/etc/letsencrypt/live/$maildomain"
 
 # Open required mail ports, and 80, for Certbot.
-for port in 80 993 465 25 587; do
+for port in 80 993 465 25 587 110 995; do
 	ufw allow "$port" 2>/dev/null
 done
 
