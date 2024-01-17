@@ -349,7 +349,7 @@ done
 
 # In some cases, big name email services favor an spf record with certain mechanisms included.
 # See http://www.open-spf.org/SPF_Record_Syntax
-mailip=ip4:$(ping -c 1 $domain | grep -m1 -Eo '([0-9]+\.){3}[0-9]+')
+mailip=$(ping -c 1 $domain | grep -m1 -Eo '([0-9]+\.){3}[0-9]+')
 
 pval="$(tr -d '\n' <"/etc/postfix/dkim/$domain/$subdom.txt" | sed "s/k=rsa.* \"p=/k=rsa; p=/;s/\"\s*\"//;s/\"\s*).*//" | grep -o 'p=.*')"
 dkimentry="$subdom._domainkey.$domain	TXT	v=DKIM1; k=rsa; $pval"
