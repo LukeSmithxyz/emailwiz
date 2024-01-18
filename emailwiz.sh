@@ -347,14 +347,14 @@ for x in opendkim dovecot postfix fail2ban; do
 	systemctl enable "$x"
 done
 
-# In some cases, big name email services favor an spf record with certain mechanisms included.
-# See http://www.open-spf.org/SPF_Record_Syntax
-mailip=$(ping -c 1 $domain | grep -m1 -Eo '([0-9]+\.){3}[0-9]+')
+# Generate spf mechanisms
+mailip4=$(host "$domain" | grep -m1 -Eo '([0-9]+\.){3}[0-9]+')
+mailip6=$(host "$domain" | grep "IPv6" | awk '{print $NF}')
 
 pval="$(tr -d '\n' <"/etc/postfix/dkim/$domain/$subdom.txt" | sed "s/k=rsa.* \"p=/k=rsa; p=/;s/\"\s*\"//;s/\"\s*).*//" | grep -o 'p=.*')"
 dkimentry="$subdom._domainkey.$domain	TXT	v=DKIM1; k=rsa; $pval"
 dmarcentry="_dmarc.$domain	TXT	v=DMARC1; p=reject; rua=mailto:dmarc@$domain; fo=1"
-spfentry="$domain	TXT	v=spf1 mx a:$maildomain ip4:$mailip -all"
+spfentry="$domain	TXT	v=spf1 mx a:$maildomain ip4:$mailip4 ip6:$mailip6 -all"
 mxentry="$domain	MX	10	$maildomain	300"
 
 useradd -m -G mail dmarc
