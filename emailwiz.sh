@@ -25,9 +25,9 @@ certdir="/etc/letsencrypt/live/$maildomain"
 
 # Preliminary record checks
 ipv4=$(host "$domain" | grep -m1 -Eo '([0-9]+\.){3}[0-9]+')
-[ -z "$ipv4" ] && echo "\033[0;31mPlease point your domain ("$domain") to your server's ipv4 address."
+[ -z "$ipv4" ] && echo "\033[0;31mPlease point your domain ("$domain") to your server's ipv4 address." && exit 1
 ipv6=$(host "$domain" | grep "IPv6" | awk '{print $NF}')
-[ -z "$ipv6" ] && echo "\033[0;31mPlease point your domain ("$domain") to your server's ipv6 address."
+[ -z "$ipv6" ] && echo "\033[0;31mPlease point your domain ("$domain") to your server's ipv6 address." && exit 1
 
 # Open required mail ports, and 80, for Certbot.
 for port in 80 993 465 25 587; do
