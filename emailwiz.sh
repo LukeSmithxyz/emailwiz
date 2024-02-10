@@ -308,9 +308,9 @@ postconf -e 'smtpd_milters = inet:localhost:12301'
 postconf -e 'non_smtpd_milters = inet:localhost:12301'
 postconf -e 'mailbox_command = /usr/lib/dovecot/deliver'
 
-# Short-term workaround to prevent SMTP smuggling
-postconf -e 'smtpd_forbid_unauth_pipelining = yes'
-postconf -e 'smtpd_discard_ehlo_keywords = chunking'
+# Long-term fix to prevent SMTP smuggling
+postconf -e 'smtpd_forbid_bare_newline = normalize'
+postconf -e 'smtpd_forbid_bare_newline_exclusions = $mynetworks'
 
 # A fix for "Opendkim won't start: can't open PID file?", as specified here: https://serverfault.com/a/847442
 /lib/opendkim/opendkim.service.generate
