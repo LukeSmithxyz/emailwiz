@@ -23,8 +23,14 @@ subdom=${MAIL_SUBDOM:-mail}
 maildomain="$subdom.$domain"
 certdir="/etc/letsencrypt/live/$maildomain"
 
+# Preliminary record checks
+ipv4=$(host "$domain" | grep -m1 -Eo '([0-9]+\.){3}[0-9]+')
+[ -z "$ipv4" ] && echo "\033[0;31mPlease point your domain ("$domain") to your server's ipv4 address." && exit 1
+ipv6=$(host "$domain" | grep "IPv6" | awk '{print $NF}')
+[ -z "$ipv6" ] && echo "\033[0;31mPlease point your domain ("$domain") to your server's ipv6 address." && exit 1
+
 # Open required mail ports, and 80, for Certbot.
-for port in 80 993 465 25 587; do
+for port in 80 993 465 25 587 110 995; do
 	ufw allow "$port" 2>/dev/null
 done
 
@@ -64,7 +70,7 @@ postconf -e "smtpd_tls_key_file=$certdir/privkey.pem"
 postconf -e "smtpd_tls_cert_file=$certdir/fullchain.pem"
 postconf -e "smtp_tls_CAfile=$certdir/cert.pem"
 
-# Enable, but do not require TLS. Requiring it with other server would cause
+# Enable, but do not require TLS. Requiring it with other servers would cause
 # mail delivery problems and requiring it locally would cause many other
 # issues.
 postconf -e 'smtpd_tls_security_level = may'
@@ -99,8 +105,8 @@ postconf -e 'smtpd_helo_restrictions = permit_mynetworks, permit_sasl_authentica
 
 # NOTE: the trailing slash here, or for any directory name in the home_mailbox
 # command, is necessary as it distinguishes a maildir (which is the actual
-# directories that what we want) from a spoolfile (which is what old unix
-# boomers want and no one else).
+# directory that we want) from a spoolfile (which is what old unix boomers want
+# and no one else).
 postconf -e 'home_mailbox = Mail/Inbox/'
 
 # Prevent "Received From:" header in sent emails in order to prevent leakage of public ip addresses
@@ -201,7 +207,7 @@ namespace inbox {
 }
 }
 
-# Here we let Postfix use Dovecot's authetication system.
+# Here we let Postfix use Dovecot's authentication system.
 service auth {
   unix_listener /var/spool/postfix/private/auth {
 	mode = 0660
@@ -308,6 +314,10 @@ postconf -e 'smtpd_milters = inet:localhost:12301'
 postconf -e 'non_smtpd_milters = inet:localhost:12301'
 postconf -e 'mailbox_command = /usr/lib/dovecot/deliver'
 
+# Long-term fix to prevent SMTP smuggling
+postconf -e 'smtpd_forbid_bare_newline = normalize'
+postconf -e 'smtpd_forbid_bare_newline_exclusions = $mynetworks'
+
 # A fix for "Opendkim won't start: can't open PID file?", as specified here: https://serverfault.com/a/847442
 /lib/opendkim/opendkim.service.generate
 systemctl daemon-reload
@@ -350,7 +360,7 @@ done
 pval="$(tr -d '\n' <"/etc/postfix/dkim/$domain/$subdom.txt" | sed "s/k=rsa.* \"p=/k=rsa; p=/;s/\"\s*\"//;s/\"\s*).*//" | grep -o 'p=.*')"
 dkimentry="$subdom._domainkey.$domain	TXT	v=DKIM1; k=rsa; $pval"
 dmarcentry="_dmarc.$domain	TXT	v=DMARC1; p=reject; rua=mailto:dmarc@$domain; fo=1"
-spfentry="$domain	TXT	v=spf1 mx a:$maildomain -all"
+spfentry="$domain	TXT	v=spf1 mx a:$maildomain ip4:$ipv4 ip6:$ipv6 -all"
 mxentry="$domain	MX	10	$maildomain	300"
 
 useradd -m -G mail dmarc
