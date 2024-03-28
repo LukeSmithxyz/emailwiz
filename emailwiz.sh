@@ -363,16 +363,16 @@ dmarcentry="_dmarc.$domain	TXT	v=DMARC1; p=reject; rua=mailto:dmarc@$domain; fo=
 spfentry="$domain	TXT	v=spf1 mx a:$maildomain ip4:$ipv4 ip6:$ipv6 -all"
 mxentry="$domain	MX	10	$maildomain	300"
 
-useradd -m -G mail dmarc
+useradd -m -G mail postmaster
 
-# Create a cronjob that deletes month-old dmarc feedback:
-cat <<EOF > /etc/cron.weekly/dmarc-clean
+# Create a cronjob that deletes month-old postmaster mails:
+cat <<EOF > /etc/cron.weekly/postmaster-clean
 #!/bin/sh
 
-find /home/dmarc/Mail -type f -mtime +30 -name '*.mail*' -delete >/dev/null 2>&1
+find /home/postmaster/Mail -type f -mtime +30 -name '*.mail*' -delete >/dev/null 2>&1
 exit 0
 EOF
-chmod 755 /etc/cron.weekly/dmarc-clean
+chmod 755 /etc/cron.weekly/postmaster-clean
 
 grep -q '^deploy-hook = echo "$RENEWED_DOMAINS" | grep -q' /etc/letsencrypt/cli.ini ||
 	echo "
