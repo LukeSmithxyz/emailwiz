@@ -17,22 +17,27 @@
 
 umask 0022
 
-apt-get install -y postfix postfix-pcre dovecot-imapd dovecot-pop3d dovecot-sieve opendkim opendkim-tools spamassassin spamc net-tools fail2ban bind9-host
-domain="$(cat /etc/mailname)"
+apt install -y postfix postfix-pcre dovecot-imapd dovecot-pop3d dovecot-sieve opendkim opendkim-tools spamassassin spamc net-tools fail2ban bind9-host
+domain="$(< /etc/mailname || read -p 'Domain: ' domain && printf $domain)"
 subdom=${MAIL_SUBDOM:-mail}
 maildomain="$subdom.$domain"
 certdir="/etc/letsencrypt/live/$maildomain"
 
+read -p 'Enable IPv6 support? (Y/n) ' v6choice
+
 # Preliminary record checks
 ipv4=$(host "$domain" | grep -m1 -Eo '([0-9]+\.){3}[0-9]+')
 [ -z "$ipv4" ] && echo "\033[0;31mPlease point your domain ("$domain") to your server's ipv4 address." && exit 1
-ipv6=$(host "$domain" | grep "IPv6" | awk '{print $NF}')
-[ -z "$ipv6" ] && echo "\033[0;31mPlease point your domain ("$domain") to your server's ipv6 address." && exit 1
+case "$v6choice" in
+  [nN]) ;;
+  *)
+    ipv6=$(host "$domain" | grep "IPv6" | awk '{print $NF}')
+    [ -z "$ipv6" ] && { printf "\033[0;31mPlease point your domain (%s) to your server's IPv6 address.\033[0m\n" "$domain"; exit 1; }
+    ;;
+esac
 
 # Open required mail ports, and 80, for Certbot.
-for port in 80 993 465 25 587 110 995; do
-	ufw allow "$port" 2>/dev/null
-done
+ufw allow 80, 993, 465, 25, 587, 110, 995/tcp 2>/dev/null
 
 [ ! -d "$certdir" ] &&
 	possiblecert="$(certbot certificates 2>/dev/null | grep "Domains:\.* \(\*\.$domain\|$maildomain\)\(\s\|$\)" -A 2 | awk '/Certificate Path/ {print $3}' | head -n1)" &&
@@ -213,7 +218,7 @@ service auth {
 	mode = 0660
 	user = postfix
 	group = postfix
-}
+  }
 }
 
 protocol lda {
@@ -360,7 +365,7 @@ done
 pval="$(tr -d '\n' <"/etc/postfix/dkim/$domain/$subdom.txt" | sed "s/k=rsa.* \"p=/k=rsa; p=/;s/\"\s*\"//;s/\"\s*).*//" | grep -o 'p=.*')"
 dkimentry="$subdom._domainkey.$domain	TXT	v=DKIM1; k=rsa; $pval"
 dmarcentry="_dmarc.$domain	TXT	v=DMARC1; p=reject; rua=mailto:postmaster@$domain; fo=1"
-spfentry="$domain	TXT	v=spf1 mx a:$maildomain ip4:$ipv4 ip6:$ipv6 -all"
+spfentry="$domain	TXT	v=spf1 mx a:$maildomain ip4:$ipv4 $( [ "${v6choice#n}" ] && printf 'ip6:%s' "$ipv6" ) -all"
 mxentry="$domain	MX	10	$maildomain	300"
 
 useradd -m -G mail postmaster
