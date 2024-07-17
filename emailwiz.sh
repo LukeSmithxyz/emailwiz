@@ -17,11 +17,42 @@
 
 umask 0022
 
-apt-get install -y postfix postfix-pcre dovecot-imapd dovecot-pop3d dovecot-sieve opendkim opendkim-tools spamassassin spamc net-tools fail2ban bind9-host
+install_packages="postfix postfix-pcre dovecot-imapd dovecot-pop3d dovecot-sieve opendkim opendkim-tools spamassassin spamc net-tools fail2ban bind9-host"
+
+systemctl -q stop dovecot
+systemctl -q stop postfix
+apt-get purge ?config-files -y $install_packages
+apt-get install -y $install_packages
+
 domain="$(cat /etc/mailname)"
 subdom=${MAIL_SUBDOM:-mail}
 maildomain="$subdom.$domain"
 certdir="/etc/letsencrypt/live/$maildomain"
+
+selfsigned="no" # yes no
+allow_suboptimal_ciphers="yes" #yes no
+mailbox_format="maildir" # maildir sdbox
+allowed_protocols=" imap pop3 "  #imap pop3
+
+use_cert_config="no"
+country_name="" # IT US UK IN etc etc
+state_or_province_name=""
+organization_name=""
+common_name="$( hostname -f )"
+
+if [ "$use_cert_config" = "yes" ]; then
+	echo "[req]
+	default_bit = 4096
+	distinguished_name = req_distinguished_name
+	prompt = no
+
+	[req_distinguished_name]
+	countryName             = $country_name
+	stateOrProvinceName     = $state_or_province_name
+	organizationName        = $organization_name
+	commonName              = $common_name " > $certdir/certconfig.conf
+
+fi
 
 # Preliminary record checks
 ipv4=$(host "$domain" | grep -m1 -Eo '([0-9]+\.){3}[0-9]+')
@@ -29,31 +60,59 @@ ipv4=$(host "$domain" | grep -m1 -Eo '([0-9]+\.){3}[0-9]+')
 ipv6=$(host "$domain" | grep "IPv6" | awk '{print $NF}')
 [ -z "$ipv6" ] && echo "\033[0;31mPlease point your domain ("$domain") to your server's ipv6 address." && exit 1
 
-# Open required mail ports, and 80, for Certbot.
+# Open required mail ports
 for port in 80 993 465 25 587 110 995; do
 	ufw allow "$port" 2>/dev/null
 done
 
-[ ! -d "$certdir" ] &&
-	possiblecert="$(certbot certificates 2>/dev/null | grep "Domains:\.* \(\*\.$domain\|$maildomain\)\(\s\|$\)" -A 2 | awk '/Certificate Path/ {print $3}' | head -n1)" &&
-	certdir="${possiblecert%/*}"
+if [ "$selfsigned" = "yes" ]; then
+	rm -f $certdir/privkey.pem
+	rm -f $certdir/csr.pem
+	rm -f $certdir/fullchain.pem
 
-[ ! -d "$certdir" ] &&
-	certdir="/etc/letsencrypt/live/$maildomain" &&
-	case "$(netstat -tulpn | grep ":80\s")" in
-	*nginx*)
-		apt install -y python3-certbot-nginx
-		certbot -d "$maildomain" certonly --nginx --register-unsafely-without-email --agree-tos
-		;;
-	*apache*)
-		apt install -y python3-certbot-apache
-		certbot -d "$maildomain" certonly --apache --register-unsafely-without-email --agree-tos
-		;;
-	*)
-		apt install -y python3-certbot
-		certbot -d "$maildomain" certonly --standalone --register-unsafely-without-email --agree-tos
-		;;
-esac
+	echo "Generating a 4096 rsa key and a self-signed certificate that lasts 100 years"
+	mkdir -p $certdir
+	openssl genrsa -out $certdir/privkey.pem 4096
+
+	if [ "$use_cert_config" = "yes" ]; then
+		openssl req -new -key $certdir/privkey.pem -out $certdir/csr.pem -config $certdir/certconfig.conf
+	else
+		openssl req -new -key $certdir/privkey.pem -out $certdir/csr.pem
+	fi
+	openssl req -x509 -days 36500 -key $certdir/privkey.pem -in $certdir/csr.pem -out $certdir/fullchain.pem
+else
+
+	# Open port 80 for Certbot.
+	ufw allow 80 2>/dev/null
+
+	[ ! -d "$certdir" ] &&
+		possiblecert="$(certbot certificates 2>/dev/null | grep "Domains:\.* \(\*\.$domain\|$maildomain\)\(\s\|$\)" -A 2 | awk '/Certificate Path/ {print $3}' | head -n1)" &&
+		certdir="${possiblecert%/*}"
+
+	[ ! -d "$certdir" ] &&
+		certdir="/etc/letsencrypt/live/$maildomain" &&
+		case "$(netstat -tulpn | grep ":80\s")" in
+		*nginx*)
+			apt install -y python3-certbot-nginx
+			certbot -d "$maildomain" certonly --nginx --register-unsafely-without-email --agree-tos
+			;;
+		*apache*)
+			apt install -y python3-certbot-apache
+			certbot -d "$maildomain" certonly --apache --register-unsafely-without-email --agree-tos
+			;;
+		*)
+			apt install -y python3-certbot
+			certbot -d "$maildomain" certonly --standalone --register-unsafely-without-email --agree-tos
+			;;
+	esac
+
+fi
+
+[ ! -f "$certdir/fullchain.pem" ] && echo "Error locating or installing SSL certificate." && exit 1
+[ ! -f "$certdir/privkey.pem" ] && echo "Error locating or installing SSL certificate." && exit 1
+if [ "$selfsigned" != "yes" ]; then
+	[ ! -f "$certdir/cert.pem" ] && echo "Error locating or installing SSL certificate." && exit 1
+fi
 
 [ ! -d "$certdir" ] && echo "Error locating or installing SSL certificate." && exit 1
 
@@ -68,7 +127,9 @@ postconf -e 'mydestination = $myhostname, $mydomain, mail, localhost.localdomain
 # Change the cert/key files to the default locations of the Let's Encrypt cert/key
 postconf -e "smtpd_tls_key_file=$certdir/privkey.pem"
 postconf -e "smtpd_tls_cert_file=$certdir/fullchain.pem"
-postconf -e "smtp_tls_CAfile=$certdir/cert.pem"
+if [ "$selfsigned" != "yes" ]; then
+	postconf -e "smtp_tls_CAfile=$certdir/cert.pem"
+fi
 
 # Enable, but do not require TLS. Requiring it with other servers would cause
 # mail delivery problems and requiring it locally would cause many other
@@ -86,8 +147,10 @@ postconf -e 'smtpd_tls_protocols = !SSLv2, !SSLv3, !TLSv1, !TLSv1.1'
 postconf -e 'smtp_tls_protocols = !SSLv2, !SSLv3, !TLSv1, !TLSv1.1'
 
 # Exclude suboptimal ciphers.
-# postconf -e 'tls_preempt_cipherlist = yes'
-# postconf -e 'smtpd_tls_exclude_ciphers = aNULL, LOW, EXP, MEDIUM, ADH, AECDH, MD5, DSS, ECDSA, CAMELLIA128, 3DES, CAMELLIA256, RSA+AES, eNULL'
+if [ "$allow_suboptimal_ciphers" = "no" ]; then
+	postconf -e 'tls_preempt_cipherlist = yes'
+	postconf -e 'smtpd_tls_exclude_ciphers = aNULL, LOW, EXP, MEDIUM, ADH, AECDH, MD5, DSS, ECDSA, CAMELLIA128, 3DES, CAMELLIA256, RSA+AES, eNULL'
+fi
 
 # Here we tell Postfix to look to Dovecot for authenticating users/passwords.
 # Dovecot will be putting an authentication socket in /var/spool/postfix/private/auth
@@ -170,7 +233,7 @@ ssl_dh = </usr/share/dovecot/dh.pem
 auth_mechanisms = plain login
 auth_username_format = %n
 
-protocols = \$protocols imap pop3
+protocols = \$protocols $allowed_protocols
 
 # Search for valid users in /etc/passwd
 userdb {
@@ -183,7 +246,7 @@ passdb {
 
 # Our mail for each user will be in ~/Mail, and the inbox will be ~/Mail/Inbox
 # The LAYOUT option is also important because otherwise, the boxes will be \`.Sent\` instead of \`Sent\`.
-mail_location = maildir:~/Mail:INBOX=~/Mail/Inbox:LAYOUT=fs
+mail_location = $mailbox_format:~/Mail:INBOX=~/Mail/Inbox:LAYOUT=fs
 namespace inbox {
 	inbox = yes
 	mailbox Drafts {
