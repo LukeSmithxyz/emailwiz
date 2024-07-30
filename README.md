@@ -41,9 +41,7 @@ sizeable network of people with email servers thanks to this script.
 
 ## Prerequisites for Installation
 
-1. Debian or Ubuntu server. I suited this script for
-   [Vultr](https://www.vultr.com/?ref=8940911-8H) servers originally, but it
-   seems to work on most other default setups on different VPS providers.
+1. Debian or Ubuntu server.
 2. DNS records that point at least your domain's `mail.` subdomain to your
    server's IP (IPv4 and IPv6). This is required on initial run for certbot to
    get an SSL certificate for your `mail.` subdomain.
