@@ -26,6 +26,7 @@ sizeable network of people with email servers thanks to this script.
 - **Certbot** SSL certificates, if not already present.
 - **fail2ban** to increase server security, with enabled modules for the above
   programs.
+- (optionally) **a self-signed certificate** instead of OpenDKIM and Certbot. This allows to quickly set up an isolated mail server that collects email notifications from devices in the same local network(s) or serves as secure/private messaging system over VPN.
 
 ## This script does _not_...
 
@@ -106,6 +107,36 @@ A user's mail will appear in `~/Mail/`. If you want to see your mail while ssh'd
 in the server, you could just install mutt, add `set spoolfile="+Inbox"` to
 your `~/.muttrc` and use mutt to view and reply to mail. You'll probably want
 to log in remotely though:
+
+## Installing with self-signed certificate, in "isolated" mode
+
+This mode skips the setup of OpenDKIM and Certbot, and will instead create a self-signed cert that lasts 100 years. It also allows to customize the logic country name, state/province name and organization name to generate the certificate automatically. An example usecase is for an isolated server that collects notifications from devices in the same local network(s) or serves as secure/private messaging system over VPN (wireguard or whatever).
+This server with self-signed certificate as configured will NOT be able to send anything to public mail servers (Gmail, Outlook and so on), at least not directly.
+
+open the script and change the following line 
+```
+selfsigned="no" # yes no
+```
+to become 
+```
+selfsigned="yes" # yes no
+```
+it's also possible to customize and automate the self-signed certificate creation
+by changing the following lines in the script 
+```
+use_cert_config="no"
+```
+to
+```
+use_cert_config="yes"
+```
+
+and then write country name, state/province name and organization name in the following lines
+```
+country_name="" # IT US UK IN etc etc
+state_or_province_name=""
+organization_name=""
+```
 
 ## Logging in from email clients (Thunderbird/mutt/etc)
 
