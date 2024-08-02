@@ -117,6 +117,44 @@ email program. For my domain, the server information will be as follows:
 - IMAP server: `mail.lukesmith.xyz`
 - IMAP port: 993
 
+## MTA-STS and DANE for improved security
+
+### MTA-STS
+
+By its very nature SMTP does not offer built-in security against man-in-the-middle attacks. To mitigate this risk, you can implement the MTA-STS policy, which instructs compatible senders to employ verified TLS encryption when communicating with your server.
+
+To put this into practice, create a file named mta-sts.txt with the specified content and host it at `https://mta-sts.example.org/.well-known/`:
+
+```
+version: STSv1
+mode: enforce
+max_age: 604800
+mx: mail.example.org
+```
+
+After that you need to add the following DNS records:
+
+```
+_mta-sts.example.org.   TXT    "v=STSv1; id=<id>"
+_smtp._tls.example.org. TXT    "v=TLSRPTv1;rua=mailto:postmaster@example.org"
+```
+`<id>` can be an arbitrary number but it's recommended to use the current unix timestamp (`date +%s`)
+
+### DANE
+
+It's also recommended to set up a TLSA (DNSSEC/DANE) record for further security enhancement. Go [here](https://ssl-tools.net/tlsa-generator) to generate a TLSA record. Set the port to 25, Transport Protocol to "tcp", and specify the MX hostname as the Domain Name.
+
+After adding the TLSA DNS record you need to enable opportunistic DANE in postfix by doing the following:
+```
+postconf -e 'smtpd_use_tls = yes'
+postconf -e 'smtp_dns_support_level = dnssec'
+postconf -e 'smtp_tls_security_level = dane'
+
+echo "dane       unix  -       -       n       -       -       smtp
+  -o smtp_dns_support_level=dnssec
+  -o smtp_tls_security_level=dane" >> /etc/postfix/master.cf
+```
+
 ## Benefited from this?
 
 I am always glad to hear this script is still making life easy for people. If
@@ -134,3 +172,6 @@ Can't send or receive mail? Getting marked as spam? There are tools to double-ch
 - [Test your TXT records via mail](https://appmaildev.com/en/dkim)
 - [Is your IP blacklisted?](https://mxtoolbox.com/blacklists.aspx)
 - [mxtoolbox](https://mxtoolbox.com/SuperTool.aspx)
+- [Check overall mail/website](https://internet.nl/)
+- [Another great mail checker](https://www.checktls.com/#Website)
+- [Check DANE](https://www.huque.com/bin/danecheck)
