@@ -5,6 +5,7 @@ domain="$1"
 
 domain="$1"
 subdom="mail"
+maildomain="$subdom.$domain"
 
 # Add the domain to the valid postfix addresses.
 grep -q "^mydestination.*$domain" /etc/postfix/main.cf ||
