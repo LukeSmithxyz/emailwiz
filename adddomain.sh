@@ -27,7 +27,7 @@ echo "*@$new_domain $subdom._domainkey.$new_domain" >> /etc/postfix/dkim/signing
 systemctl reload opendkim postfix
 
 # Print out DKIM TXT entry.
-pval="$(tr -d '\n' <"/etc/postfix/dkim/$new_domain/$subdom.txt" | sed "s/k=rsa.*p=/k=rsa; p=/;s/\"\s*\"//g;s/\"\s*.*//g" | grep -o 'p=.*')"
+pval="$(tr -d '\n' <"/etc/postfix/dkim/$new_domain/$subdom.txt" | sed sed "s/k=rsa.* \"p=/k=rsa; p=/;s/\"\s*\"//;s/\"\s*).*//" | grep -o 'p=.*')"
 
 dkimentry="$subdom._domainkey.$new_domain	TXT	v=DKIM1; k=rsa; $pval"
 dmarcentry="_dmarc.$new_domain	TXT	v=DMARC1; p=reject; rua=mailto:dmarc@$new_domain; fo=1"
