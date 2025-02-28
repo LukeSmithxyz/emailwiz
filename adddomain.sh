@@ -1,28 +1,33 @@
 #!/bin/sh
 
 domain="$1"
-[ -z "$1" ] && exit
+[ -z "$domain" ] && exit
 
-domain="$1"
+# Input validation to allow only valid domain characters
+if ! [[ "$domain" =~ ^[a-zA-Z0-9.-]+$ ]]; then
+    echo "Invalid domain format. Only alphanumeric characters, dashes, and dots are allowed."
+    exit 1
+fi
+
 subdom="mail"
 
-# Add the domain to the valid postfix addresses.
+# Add the domain to the valid postfix addresses
 grep -q "^mydestination.*$domain" /etc/postfix/main.cf ||
-	sed -i "s/^mydestination.*/&, $domain/" /etc/postfix/main.cf
+    sed -i "s/^mydestination.*/&, $domain/" /etc/postfix/main.cf
 
-# Create DKIM for new domain.
+# Create DKIM for the new domain
 mkdir -p "/etc/postfix/dkim/$domain"
 opendkim-genkey -D "/etc/postfix/dkim/$domain" -d "$domain" -s "$subdom"
 chgrp -R opendkim /etc/postfix/dkim/*
 chmod -R g+r /etc/postfix/dkim/*
 
-# Add entries to keytable and signing table.
+# Add entries to keytable and signing table
 echo "$subdom._domainkey.$domain $domain:$subdom:/etc/postfix/dkim/$domain/$subdom.private" >> /etc/postfix/dkim/keytable
 echo "*@$domain $subdom._domainkey.$domain" >> /etc/postfix/dkim/signingtable
 
 systemctl reload opendkim postfix
 
-# Print out DKIM TXT entry.
+# Print out DKIM TXT entry
 pval="$(tr -d '\n' <"/etc/postfix/dkim/$domain/$subdom.txt" | sed "s/k=rsa.* \"p=/k=rsa; p=/;s/\"\s*\"//;s/\"\s*).*//" | grep -o 'p=.*')"
 
 dkimentry="$subdom._domainkey.$domain	TXT	v=DKIM1; k=rsa; $pval"
