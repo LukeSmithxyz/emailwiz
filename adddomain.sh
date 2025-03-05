@@ -1,15 +1,15 @@
 #!/bin/sh
 
 domain="$1"
-[ -z "$domain" ] && exit
 
 # Input validation to allow only valid domain characters
 if ! [[ "$domain" =~ ^[a-zA-Z0-9.-]+$ ]]; then
-    echo "Invalid domain format. Only alphanumeric characters, dashes, and dots are allowed."
+    echo "Give a valid domain as an argument to add mail server for it. Only alphanumeric characters, dashes, and dots are allowed."
     exit 1
 fi
 
 subdom="mail"
+maildomain="mail.$(cat /etc/mailname)"
 
 # Add the domain to the valid postfix addresses
 grep -q "^mydestination.*$domain" /etc/postfix/main.cf ||
