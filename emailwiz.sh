@@ -160,7 +160,7 @@ postconf -e 'smtpd_sasl_path = private/auth'
 
 # helo, sender, relay and recipient restrictions
 postconf -e "smtpd_sender_login_maps = pcre:/etc/postfix/login_maps.pcre"
-postconf -e 'smtpd_sender_restrictions = permit_sasl_authenticated, permit_mynetworks, reject_sender_login_mismatch, reject_unknown_reverse_client_hostname, reject_unknown_sender_domain'
+postconf -e 'smtpd_sender_restrictions = reject_sender_login_mismatch, permit_sasl_authenticated, permit_mynetworks, reject_unknown_reverse_client_hostname, reject_unknown_sender_domain'
 postconf -e 'smtpd_recipient_restrictions = permit_sasl_authenticated, permit_mynetworks, reject_unauth_destination, reject_unknown_recipient_domain'
 postconf -e 'smtpd_relay_restrictions = permit_sasl_authenticated, reject_unauth_destination'
 postconf -e 'smtpd_helo_required = yes'
