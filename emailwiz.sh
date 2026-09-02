@@ -222,8 +222,8 @@ dovecot_config_version = 2.4.0
 dovecot_storage_version = 2.4.0
 
 ssl = required
-ssl_server_cert_file = <$certdir/fullchain.pem
-ssl_server_key_file = <$certdir/privkey.pem
+ssl_server_cert_file = $certdir/fullchain.pem
+ssl_server_key_file = $certdir/privkey.pem
 ssl_min_protocol = TLSv1.2
 ssl_cipher_list = "'EECDH+ECDSA+AESGCM:EECDH+aRSA+AESGCM:EECDH+ECDSA+SHA256:EECDH+aRSA+SHA256:EECDH+ECDSA+SHA384:EECDH+ECDSA+SHA256:EECDH+aRSA+SHA384:EDH+aRSA+AESGCM:EDH+aRSA+SHA256:EDH+aRSA:EECDH:!aNULL:!eNULL:!MEDIUM:!LOW:!3DES:!MD5:!EXP:!PSK:!SRP:!DSS:!RC4:!SEED'"
 ssl_server_prefer_ciphers = server
