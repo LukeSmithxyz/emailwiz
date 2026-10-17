@@ -3,10 +3,12 @@
 domain="$1"
 
 # Input validation to allow only valid domain characters
-if ! [[ "$domain" =~ ^[a-zA-Z0-9.-]+$ ]]; then
-    echo "Give a valid domain as an argument to add mail server for it. Only alphanumeric characters, dashes, and dots are allowed."
-    exit 1
-fi
+case "$domain" in
+    ""|*[!a-zA-Z0-9.-]*)
+        echo "Give a valid domain as an argument to add mail server for it. Only alphanumeric characters, dashes, and dots are allowed."
+        exit 1
+        ;;
+esac
 
 subdom="mail"
 maildomain="mail.$(cat /etc/mailname)"
@@ -24,6 +26,7 @@ chmod -R g+r /etc/postfix/dkim/*
 # Add entries to keytable and signing table
 echo "$subdom._domainkey.$domain $domain:$subdom:/etc/postfix/dkim/$domain/$subdom.private" >> /etc/postfix/dkim/keytable
 echo "*@$domain $subdom._domainkey.$domain" >> /etc/postfix/dkim/signingtable
+echo "/^(.*)@$(echo "$domain" | sed 's/\./\\./')\$/   \${1}" >> /etc/postfix/login_maps.pcre
 
 systemctl reload opendkim postfix
 
