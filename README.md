@@ -156,11 +156,12 @@ this script or documentation has saved you some frustration, donate here:
 - btc: `bc1qzw6mk80t3vrp2cugmgfjqgtgzhldrqac5axfh4`
 - xmr: `8A5v4Ci11Lz7BDoE2z2oPqMoNHzr5Zj8B3Q2N2qzqrUKhAKgNQYGSSaZDnBUWg6iXCiZyvC9mVCyGj5kGMJTi1zGKGM4Trm`
 
-## Sites for Troubleshooting
+## Troubleshooting
 
 Can't send or receive mail? Getting marked as spam? There are tools to double-check your DNS records and more:
 
 - Always check `journalctl -xe` first for specific errors.
+- This script creates a configuration file for Dovecot >= 2.4. See [#347](https://github.com/LukeSmithxyz/emailwiz/issues/347).
 - [Check your DNS](https://intodns.com/)
 - [Test your TXT records via mail](https://appmaildev.com/en/dkim)
 - [Is your IP blacklisted?](https://mxtoolbox.com/blacklists.aspx)

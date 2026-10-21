@@ -195,7 +195,6 @@ submission inet n       -       y       -       -       smtpd
   -o syslog_name=postfix/submission
   -o smtpd_tls_security_level=encrypt
   -o smtpd_tls_auth_only=yes
-  -o smtpd_enforce_tls=yes
   -o smtpd_client_restrictions=permit_sasl_authenticated,reject
   -o smtpd_sender_restrictions=reject_sender_login_mismatch
   -o smtpd_sender_login_maps=pcre:/etc/postfix/login_maps.pcre
@@ -217,87 +216,105 @@ mv /etc/dovecot/dovecot.conf /etc/dovecot/dovecot.backup.conf
 echo "Creating Dovecot config..."
 
 echo "# Dovecot config
-# Note that in the dovecot conf, you can use:
-# %u for username
-# %n for the name in name@domain.tld
-# %d for the domain
-# %h the user's home directory
+dovecot_config_version = 2.4.0
+dovecot_storage_version = 2.4.0
 
 ssl = required
-ssl_cert = <$certdir/fullchain.pem
-ssl_key = <$certdir/privkey.pem
+ssl_server_cert_file = $certdir/fullchain.pem
+ssl_server_key_file = $certdir/privkey.pem
 ssl_min_protocol = TLSv1.2
-ssl_cipher_list = "'EECDH+ECDSA+AESGCM:EECDH+aRSA+AESGCM:EECDH+ECDSA+SHA256:EECDH+aRSA+SHA256:EECDH+ECDSA+SHA384:EECDH+ECDSA+SHA256:EECDH+aRSA+SHA384:EDH+aRSA+AESGCM:EDH+aRSA+SHA256:EDH+aRSA:EECDH:!aNULL:!eNULL:!MEDIUM:!LOW:!3DES:!MD5:!EXP:!PSK:!SRP:!DSS:!RC4:!SEED'"
-ssl_prefer_server_ciphers = yes
-ssl_dh = </usr/share/dovecot/dh.pem
+ssl_cipher_list = EECDH+ECDSA+AESGCM:EECDH+aRSA+AESGCM:EECDH+ECDSA+SHA256:EECDH+aRSA+SHA256:EECDH+ECDSA+SHA384:EECDH+ECDSA+SHA256:EECDH+aRSA+SHA384:EDH+aRSA+AESGCM:EDH+aRSA+SHA256:EDH+aRSA:EECDH:!aNULL:!eNULL:!MEDIUM:!LOW:!3DES:!MD5:!EXP:!PSK:!SRP:!DSS:!RC4:!SEED
+ssl_server_prefer_ciphers = server
+ssl_server_dh_file = /usr/share/dovecot/dh.pem
 auth_mechanisms = plain login
-auth_username_format = %n
+auth_username_format = %{user | username }
 
-protocols = \$protocols $allowed_protocols
+protocols = $allowed_protocols
 
 # Search for valid users in /etc/passwd
-userdb {
-	driver = passwd
+userdb users {
+  driver = passwd
 }
+
 #Fallback: Use plain old PAM to find user passwords
-passdb {
-	driver = pam
+passdb pam {
+  driver = pam
 }
 
 # Our mail for each user will be in ~/Mail, and the inbox will be ~/Mail/Inbox
 # The LAYOUT option is also important because otherwise, the boxes will be \`.Sent\` instead of \`Sent\`.
-mail_location = $mailbox_format:~/Mail:INBOX=~/Mail/Inbox:LAYOUT=fs
+mailbox_list_layout = fs
+mail_driver = maildir
+mail_path = ~/Mail
+mail_inbox_path = ~/Mail/Inbox
+
 namespace inbox {
-	inbox = yes
-	mailbox Drafts {
-	special_use = \\Drafts
-	auto = subscribe
-}
-	mailbox Junk {
-	special_use = \\Junk
-	auto = subscribe
-	autoexpunge = 30d
-}
-	mailbox Sent {
-	special_use = \\Sent
-	auto = subscribe
-}
-	mailbox Trash {
-	special_use = \\Trash
-}
-	mailbox Archive {
-	special_use = \\Archive
-}
+  inbox = yes
+
+  mailbox Drafts {
+    special_use = \Drafts
+    auto = subscribe
+  }
+
+  mailbox Junk {
+    special_use = \Junk
+    auto = subscribe
+    autoexpunge = 30d
+  }
+
+  mailbox Sent {
+    special_use = \Sent
+    auto = subscribe
+  }
+
+  mailbox Trash {
+    special_use = \Trash
+  }
+
+  mailbox Archive {
+    special_use = \Archive
+  }
 }
 
 # Here we let Postfix use Dovecot's authentication system.
 service auth {
   unix_listener /var/spool/postfix/private/auth {
-	mode = 0660
-	user = postfix
-	group = postfix
+  mode = 0660
+  user = postfix
+  group = postfix
 }
 }
 
 protocol lda {
-  mail_plugins = \$mail_plugins sieve
+  mail_plugins = sieve
 }
 
 protocol lmtp {
-  mail_plugins = \$mail_plugins sieve
+  mail_plugins = sieve
 }
 
 protocol pop3 {
-  pop3_uidl_format = %08Xu%08Xv
+  pop3_uidl_format = %{uid | hex(8)}%{uidvalidity | hex(8)}
   pop3_no_flag_updates = yes
 }
 
-plugin {
-	sieve = ~/.dovecot.sieve
-	sieve_default = /var/lib/dovecot/sieve/default.sieve
-	#sieve_global_path = /var/lib/dovecot/sieve/default.sieve
-	sieve_dir = ~/.sieve
-	sieve_global_dir = /var/lib/dovecot/sieve/
+
+sieve_script personal {
+  driver = file
+  type = personal
+  path = ~/.sieve
+  active_path = ~/.dovecot.sieve
+}
+
+sieve_script default {
+    type = default
+    driver = file
+    path = /var/lib/dovecot/sieve/default.sieve
+}
+
+sieve_script global {
+  type = global
+  path = /var/lib/dovecot/sieve/
 }
 " > /etc/dovecot/dovecot.conf
 
